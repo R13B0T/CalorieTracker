@@ -20,8 +20,20 @@ function Eyes({ mood }: { mood: Mood }) {
     case 'ecstatic':
       return (
         <g fill={INK}>
-          <path d="M70 92 q10 -12 20 0" stroke={INK} strokeWidth="6" fill="none" strokeLinecap="round" />
-          <path d="M110 92 q10 -12 20 0" stroke={INK} strokeWidth="6" fill="none" strokeLinecap="round" />
+          <path
+            d="M70 92 q10 -12 20 0"
+            stroke={INK}
+            strokeWidth="6"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M110 92 q10 -12 20 0"
+            stroke={INK}
+            strokeWidth="6"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
     case 'sleepy':
@@ -38,7 +50,12 @@ function Eyes({ mood }: { mood: Mood }) {
           <circle cx="120" cy="96" r="9" fill={INK} />
           <circle cx="83" cy="93" r="3" fill="#fff" />
           <circle cx="123" cy="93" r="3" fill="#fff" />
-          <path d="M66 80 l20 6 M134 80 l-20 6" stroke={INK} strokeWidth="5" strokeLinecap="round" />
+          <path
+            d="M66 80 l20 6 M134 80 l-20 6"
+            stroke={INK}
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
         </g>
       );
     case 'peckish':
@@ -48,7 +65,13 @@ function Eyes({ mood }: { mood: Mood }) {
           <ellipse cx="120" cy="96" rx="9" ry="10" fill={INK} />
           <circle cx="83" cy="92" r="3.5" fill="#fff" />
           <circle cx="123" cy="92" r="3.5" fill="#fff" />
-          <path d="M60 116 q6 -4 12 0" stroke="#7fb3d5" strokeWidth="3" fill="none" strokeLinecap="round" />
+          <path
+            d="M60 116 q6 -4 12 0"
+            stroke="#7fb3d5"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
     default:
@@ -142,7 +165,14 @@ function Outfit({ id }: { id: string | null | undefined }) {
 /**
  * Layered SVG quokka. Stage tweaks proportions and adds flair; mood drives the face.
  */
-export function QuokkaSprite({ stage, mood, outfitId, size = 160, className = '', animate }: QuokkaSpriteProps) {
+export function QuokkaSprite({
+  stage,
+  mood,
+  outfitId,
+  size = 160,
+  className = '',
+  animate,
+}: QuokkaSpriteProps) {
   const headScale = stage === 'joey' ? 1.08 : stage === 'legend' ? 0.96 : 1;
   const bodyY = stage === 'joey' ? 8 : 0;
   return (
@@ -154,9 +184,7 @@ export function QuokkaSprite({ stage, mood, outfitId, size = 160, className = ''
       role="img"
       aria-label={`A ${mood} ${stage} quokka`}
     >
-      {stage === 'legend' && (
-        <circle cx="100" cy="104" r="92" fill="url(#aura)" opacity="0.5" />
-      )}
+      {stage === 'legend' && <circle cx="100" cy="104" r="92" fill="url(#aura)" opacity="0.5" />}
       <defs>
         <radialGradient id="aura">
           <stop offset="60%" stopColor="#f2b544" stopOpacity="0" />
@@ -165,8 +193,20 @@ export function QuokkaSprite({ stage, mood, outfitId, size = 160, className = ''
       </defs>
       {/* body */}
       <g transform={`translate(0 ${bodyY})`}>
-        <ellipse cx="100" cy="160" rx={stage === 'joey' ? 46 : 54} ry={stage === 'joey' ? 30 : 36} fill={FUR} />
-        <ellipse cx="100" cy="166" rx={stage === 'joey' ? 28 : 34} ry={stage === 'joey' ? 20 : 24} fill={BELLY} />
+        <ellipse
+          cx="100"
+          cy="160"
+          rx={stage === 'joey' ? 46 : 54}
+          ry={stage === 'joey' ? 30 : 36}
+          fill={FUR}
+        />
+        <ellipse
+          cx="100"
+          cy="166"
+          rx={stage === 'joey' ? 28 : 34}
+          ry={stage === 'joey' ? 20 : 24}
+          fill={BELLY}
+        />
         {/* feet */}
         <ellipse cx="72" cy="186" rx="16" ry="8" fill={FUR_DARK} />
         <ellipse cx="128" cy="186" rx="16" ry="8" fill={FUR_DARK} />

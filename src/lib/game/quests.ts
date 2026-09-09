@@ -1,5 +1,11 @@
 import type { QuestInstance } from '../db/types';
-import { DAILY_QUEST_COUNT, QUEST_TEMPLATES, WEEKLY_QUEST_COUNT, type QuestMetric, type QuestTemplate } from '@/data/quests';
+import {
+  DAILY_QUEST_COUNT,
+  QUEST_TEMPLATES,
+  WEEKLY_QUEST_COUNT,
+  type QuestMetric,
+  type QuestTemplate,
+} from '@/data/quests';
 import { isoWeekKey } from '../date';
 
 function weightedPick(pool: QuestTemplate[], n: number, rnd: () => number): QuestTemplate[] {
@@ -27,20 +33,28 @@ export function rollQuests(
 ): { quests: QuestInstance[]; recent: { templateId: string; dayKey: string }[] } {
   const week = isoWeekKey(dayKey);
   const keep = existing.filter(
-    (q) => (q.period === 'daily' && q.periodKey === dayKey) || (q.period === 'weekly' && q.periodKey === week),
+    (q) =>
+      (q.period === 'daily' && q.periodKey === dayKey) ||
+      (q.period === 'weekly' && q.periodKey === week),
   );
-  const recentIds = new Set(recent.filter((r) => daysAgo(r.dayKey, dayKey) < 3).map((r) => r.templateId));
+  const recentIds = new Set(
+    recent.filter((r) => daysAgo(r.dayKey, dayKey) < 3).map((r) => r.templateId),
+  );
   const newRecent = recent.filter((r) => daysAgo(r.dayKey, dayKey) < 3);
 
   const needDaily = DAILY_QUEST_COUNT - keep.filter((q) => q.period === 'daily').length;
   if (needDaily > 0) {
-    const pool = QUEST_TEMPLATES.filter((t) => t.period === 'daily' && !t.special && !recentIds.has(t.id));
+    const pool = QUEST_TEMPLATES.filter(
+      (t) => t.period === 'daily' && !t.special && !recentIds.has(t.id),
+    );
     for (const t of weightedPick(pool, needDaily, rnd)) {
       keep.push(instance(t, dayKey));
       newRecent.push({ templateId: t.id, dayKey });
     }
   }
-  const needWeekly = WEEKLY_QUEST_COUNT - keep.filter((q) => q.period === 'weekly' && q.templateId !== 's_comeback').length;
+  const needWeekly =
+    WEEKLY_QUEST_COUNT -
+    keep.filter((q) => q.period === 'weekly' && q.templateId !== 's_comeback').length;
   if (needWeekly > 0) {
     const pool = QUEST_TEMPLATES.filter((t) => t.period === 'weekly' && !t.special);
     for (const t of weightedPick(pool, needWeekly, rnd)) keep.push(instance(t, week));

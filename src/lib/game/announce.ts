@@ -6,7 +6,11 @@ import { templateFor } from './quests';
 export function announce(res: GameResult | null | undefined) {
   if (!res) return;
   if (res.xpGained > 0) {
-    toast(`+${res.xpGained} XP${res.coinsGained ? `  ·  +${res.coinsGained} coins` : ''}`, 'reward', '✨');
+    toast(
+      `+${res.xpGained} XP${res.coinsGained ? `  ·  +${res.coinsGained} coins` : ''}`,
+      'reward',
+      '✨',
+    );
   }
   for (const q of res.questsCompleted) {
     const t = templateFor(q);

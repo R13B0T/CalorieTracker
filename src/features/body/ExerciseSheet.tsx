@@ -25,7 +25,10 @@ export function ExerciseSheet({ open, onClose }: { open: boolean; onClose: () =>
     if (!desc.trim()) return;
     setBusy(true);
     try {
-      const e = await estimateExercise(desc, { weightKg: latestWeight?.kg ?? profile?.startWeightKg ?? 75, sex: profile?.sex ?? 'male' });
+      const e = await estimateExercise(desc, {
+        weightKg: latestWeight?.kg ?? profile?.startWeightKg ?? 75,
+        sex: profile?.sex ?? 'male',
+      });
       setEst(e);
       setKcal(Math.round(e.kcal));
       setMinutes(Math.round(e.minutes));
@@ -38,9 +41,17 @@ export function ExerciseSheet({ open, onClose }: { open: boolean; onClose: () =>
 
   async function save() {
     if (!desc.trim() || typeof kcal !== 'number') return;
-    const res = await logExercise(desc.trim(), kcal, typeof minutes === 'number' ? minutes : undefined, est ? 'ai' : 'manual');
+    const res = await logExercise(
+      desc.trim(),
+      kcal,
+      typeof minutes === 'number' ? minutes : undefined,
+      est ? 'ai' : 'manual',
+    );
     announce(res);
-    setDesc(''); setKcal(''); setMinutes(''); setEst(null);
+    setDesc('');
+    setKcal('');
+    setMinutes('');
+    setEst(null);
     onClose();
   }
 
@@ -48,8 +59,16 @@ export function ExerciseSheet({ open, onClose }: { open: boolean; onClose: () =>
     <Sheet open={open} onClose={onClose} title="Log exercise">
       <div className="flex flex-col gap-3">
         <div>
-          <label className="label" htmlFor="ex-desc">What did you do?</label>
-          <input id="ex-desc" className="input" placeholder="45 min gym, moderate. 5 km run in 28 min." value={desc} onChange={(e) => setDesc(e.target.value)} />
+          <label className="label" htmlFor="ex-desc">
+            What did you do?
+          </label>
+          <input
+            id="ex-desc"
+            className="input"
+            placeholder="45 min gym, moderate. 5 km run in 28 min."
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+          />
         </div>
         {hasKey && (
           <button className="btn-secondary" disabled={!desc.trim() || busy} onClick={ask}>
@@ -58,8 +77,12 @@ export function ExerciseSheet({ open, onClose }: { open: boolean; onClose: () =>
         )}
         {est && (
           <div className="rounded-xl bg-sand-100 px-3 py-2 text-sm flex flex-col gap-1">
-            <div className="flex items-center gap-2 font-bold">{est.activity} <ConfidenceBadge level={est.confidence} /></div>
-            <div className="text-xs text-bark-500">MET {est.met} · {est.notes}</div>
+            <div className="flex items-center gap-2 font-bold">
+              {est.activity} <ConfidenceBadge level={est.confidence} />
+            </div>
+            <div className="text-xs text-bark-500">
+              MET {est.met} · {est.notes}
+            </div>
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">
@@ -67,9 +90,16 @@ export function ExerciseSheet({ open, onClose }: { open: boolean; onClose: () =>
           <NumberField label="Burned" value={kcal} onChange={setKcal} unit="kcal" min={0} />
         </div>
         <p className="text-xs text-bark-500">
-          Honest note: trackers overstate exercise burn. By default Quokkal does not add it back to your food budget. Flip that in Settings if you want.
+          Honest note: trackers overstate exercise burn. By default Quokkal does not add it back to
+          your food budget. Flip that in Settings if you want.
         </p>
-        <button className="btn-primary" disabled={!desc.trim() || typeof kcal !== 'number'} onClick={save}>Log exercise</button>
+        <button
+          className="btn-primary"
+          disabled={!desc.trim() || typeof kcal !== 'number'}
+          onClick={save}
+        >
+          Log exercise
+        </button>
       </div>
     </Sheet>
   );

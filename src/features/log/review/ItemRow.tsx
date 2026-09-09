@@ -29,7 +29,12 @@ export function ItemRow({
 
   return (
     <li className="card p-3 flex flex-col gap-2">
-      <button type="button" className="flex items-start justify-between gap-3 text-left w-full" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+      <button
+        type="button"
+        className="flex items-start justify-between gap-3 text-left w-full"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
         <div className="min-w-0 flex-1">
           <div className="font-bold text-bark-900 truncate">{item.name}</div>
           <div className="flex items-center gap-2 mt-0.5">
@@ -53,7 +58,10 @@ export function ItemRow({
             <Stat label="Fat" v={n.fat} colour="var(--color-fat)" />
             <Stat label="Fibre" v={n.fibre} colour="var(--color-fibre)" />
           </div>
-          <PortionSlider value={item.scale} onChange={(s) => onChange({ ...item, scale: s, userEdited: true })} />
+          <PortionSlider
+            value={item.scale}
+            onChange={(s) => onChange({ ...item, scale: s, userEdited: true })}
+          />
           <div className="flex items-center gap-2 text-sm">
             <span className="text-bark-700 font-semibold">Exact grams</span>
             {editingGrams ? (
@@ -72,7 +80,11 @@ export function ItemRow({
                 }}
               />
             ) : (
-              <button type="button" className="chip bg-sand-200 text-bark-900" onClick={() => setEditingGrams(true)}>
+              <button
+                type="button"
+                className="chip bg-sand-200 text-bark-900"
+                onClick={() => setEditingGrams(true)}
+              >
                 {grams} g ✎
               </button>
             )}
@@ -93,7 +105,11 @@ export function ItemRow({
               onChange={(e) => onChange({ ...item, name: e.target.value, userEdited: true })}
               aria-label="Item name"
             />
-            <button type="button" className="btn-ghost text-berry-500 px-3 py-1 text-sm" onClick={onRemove}>
+            <button
+              type="button"
+              className="btn-ghost text-berry-500 px-3 py-1 text-sm"
+              onClick={onRemove}
+            >
               Remove
             </button>
           </div>

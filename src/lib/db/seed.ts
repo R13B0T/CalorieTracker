@@ -28,7 +28,9 @@ export interface OnboardingInput {
 
 export function buildProfile(input: OnboardingInput, now = Date.now()): UserProfile {
   const age = ageFromBirthYear(input.birthYear, new Date(now));
-  const maintenance = Math.round(calcTdee(input.sex, input.weightKg, input.heightCm, age, input.activity));
+  const maintenance = Math.round(
+    calcTdee(input.sex, input.weightKg, input.heightCm, age, input.activity),
+  );
   const target = targetKcal(maintenance, input.goal, input.rateKgPerWeek, input.sex);
   return {
     id: 'me',

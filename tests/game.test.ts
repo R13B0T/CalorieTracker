@@ -34,7 +34,15 @@ describe('mood', () => {
     streakLostWithin24h: false,
   };
   it('is ecstatic after a great day', () => {
-    expect(moodFrom({ ...base, mealsLast24h: 3, weighInLast48h: true, yesterdayWithinTarget: true, hoursSinceLastLog: 2 })).toBe('ecstatic');
+    expect(
+      moodFrom({
+        ...base,
+        mealsLast24h: 3,
+        weighInLast48h: true,
+        yesterdayWithinTarget: true,
+        hoursSinceLastLog: 2,
+      }),
+    ).toBe('ecstatic');
   });
   it('is sleepy for a brand new user, never peckish', () => {
     expect(moodFrom(base)).toBe('sleepy');
@@ -49,7 +57,12 @@ describe('mood', () => {
 
 describe('streak', () => {
   const fresh = { current: 0, best: 0, lastCountedDay: null, freezes: 1, frozenDays: [] };
-  const day = (dayKey: string, entryCount: number) => ({ dayKey, entryCount, weighedIn: false, waterHit: false });
+  const day = (dayKey: string, entryCount: number) => ({
+    dayKey,
+    entryCount,
+    weighedIn: false,
+    waterHit: false,
+  });
   it('counts contiguous days and awards XP', () => {
     let s = fresh;
     let out = applyDayToStreak(s, day('2026-09-01', 2), 0);
@@ -61,7 +74,11 @@ describe('streak', () => {
     expect(out.streak.best).toBe(2);
   });
   it('one entry plus a weigh-in counts', () => {
-    const out = applyDayToStreak(fresh, { dayKey: '2026-09-01', entryCount: 1, weighedIn: true, waterHit: false }, 0);
+    const out = applyDayToStreak(
+      fresh,
+      { dayKey: '2026-09-01', entryCount: 1, weighedIn: true, waterHit: false },
+      0,
+    );
     expect(out.counted).toBe(true);
   });
   it('consumes exactly one freeze on a missed day, then resets on the next miss', () => {

@@ -11,7 +11,12 @@ import {
   type ExerciseEstimate,
   type MealAnalysis,
 } from './schemas';
-import { MEAL_SYSTEM_PROMPT, PHOTO_USER_DEFAULT, TEXT_USER_PREFIX, refinePrompt } from './prompts/meal';
+import {
+  MEAL_SYSTEM_PROMPT,
+  PHOTO_USER_DEFAULT,
+  TEXT_USER_PREFIX,
+  refinePrompt,
+} from './prompts/meal';
 import { EXERCISE_SYSTEM_PROMPT } from './prompts/exercise';
 import { COACH_RULES } from './prompts/coach';
 import { PERSONAS } from './personas';
@@ -43,12 +48,17 @@ async function getSettings() {
 
 export function toAiError(e: unknown): AiError {
   if (e instanceof AiError) return e;
-  if (e instanceof DOMException && e.name === 'AbortError') return new AiError('aborted', 'Aborted');
+  if (e instanceof DOMException && e.name === 'AbortError')
+    return new AiError('aborted', 'Aborted');
   if (e instanceof Anthropic.AuthenticationError) return new AiError('bad_key', e.message);
   if (e instanceof Anthropic.PermissionDeniedError) return new AiError('bad_key', e.message);
   if (e instanceof Anthropic.RateLimitError) {
     const ra = Number(e.headers?.get?.('retry-after'));
-    return new AiError('rate_limited', e.message, Number.isFinite(ra) && ra > 0 ? ra * 1000 : 15_000);
+    return new AiError(
+      'rate_limited',
+      e.message,
+      Number.isFinite(ra) && ra > 0 ? ra * 1000 : 15_000,
+    );
   }
   if (e instanceof Anthropic.BadRequestError) {
     if (/too large|exceeds|image/i.test(e.message)) return new AiError('too_large', e.message);
@@ -57,7 +67,8 @@ export function toAiError(e: unknown): AiError {
   if (e instanceof Anthropic.InternalServerError) return new AiError('server', e.message);
   if (e instanceof Anthropic.APIConnectionError) return new AiError('offline', e.message);
   if (e instanceof Anthropic.APIError) return new AiError('server', e.message);
-  if (typeof navigator !== 'undefined' && !navigator.onLine) return new AiError('offline', 'Offline');
+  if (typeof navigator !== 'undefined' && !navigator.onLine)
+    return new AiError('offline', 'Offline');
   return new AiError('unknown', e instanceof Error ? e.message : String(e));
 }
 
@@ -186,7 +197,12 @@ export async function estimateExercise(
   return structured(
     ExerciseEstimateSchema,
     EXERCISE_SYSTEM_PROMPT,
-    [{ type: 'text', text: `Body mass: ${body.weightKg} kg (${body.sex}).\nActivity: ${text.trim()}` }],
+    [
+      {
+        type: 'text',
+        text: `Body mass: ${body.weightKg} kg (${body.sex}).\nActivity: ${text.trim()}`,
+      },
+    ],
     model,
     1024,
     opts.signal,

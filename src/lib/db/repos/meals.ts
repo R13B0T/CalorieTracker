@@ -20,7 +20,9 @@ export interface SaveMealInput {
   loggedAt?: number;
 }
 
-export async function saveMeal(input: SaveMealInput): Promise<{ entry: FoodEntry; result: GameResult }> {
+export async function saveMeal(
+  input: SaveMealInput,
+): Promise<{ entry: FoodEntry; result: GameResult }> {
   const settings = await db.settings.get('me');
   const loggedAt = input.loggedAt ?? Date.now() + (settings?.timeOffsetMs ?? 0);
   const dayKey = toDayKey(loggedAt, settings?.dayStartHour ?? 4);
@@ -48,7 +50,10 @@ export async function saveMeal(input: SaveMealInput): Promise<{ entry: FoodEntry
   return { entry, result };
 }
 
-export async function updateMeal(id: string, patch: Partial<Pick<FoodEntry, 'title' | 'items' | 'slot' | 'notes'>>): Promise<void> {
+export async function updateMeal(
+  id: string,
+  patch: Partial<Pick<FoodEntry, 'title' | 'items' | 'slot' | 'notes'>>,
+): Promise<void> {
   await db.entries.update(id, patch);
 }
 
@@ -59,7 +64,10 @@ export async function deleteMeal(id: string): Promise<void> {
   await applyEvent({ type: 'meal_deleted', entry });
 }
 
-export async function duplicateMeal(id: string, slot?: MealSlot): Promise<{ entry: FoodEntry; result: GameResult } | null> {
+export async function duplicateMeal(
+  id: string,
+  slot?: MealSlot,
+): Promise<{ entry: FoodEntry; result: GameResult } | null> {
   const src = await db.entries.get(id);
   if (!src) return null;
   return saveMeal({

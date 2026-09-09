@@ -16,7 +16,10 @@ export async function startFast(targetHours: number): Promise<FastingSession> {
   return f;
 }
 
-export async function endFast(): Promise<{ session: FastingSession; result: GameResult | null } | null> {
+export async function endFast(): Promise<{
+  session: FastingSession;
+  result: GameResult | null;
+} | null> {
   const f = await activeFast();
   if (!f) return null;
   const endedAt = Date.now();
@@ -27,7 +30,10 @@ export async function endFast(): Promise<{ session: FastingSession; result: Game
   let result: GameResult | null = null;
   if (completed) {
     const s = await db.settings.get('me');
-    result = await applyEvent({ type: 'fast_completed', dayKey: toDayKey(endedAt, s?.dayStartHour ?? 4) });
+    result = await applyEvent({
+      type: 'fast_completed',
+      dayKey: toDayKey(endedAt, s?.dayStartHour ?? 4),
+    });
   }
   return { session, result };
 }

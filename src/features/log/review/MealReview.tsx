@@ -2,7 +2,11 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useSessionStore, toast } from '@/stores/useSessionStore';
 import type { FoodItem, MealSlot } from '@/lib/db/types';
-import { analysisToItems, CONFIDENCE_PCT, overallConfidence } from '@/lib/nutrition/analysisToItems';
+import {
+  analysisToItems,
+  CONFIDENCE_PCT,
+  overallConfidence,
+} from '@/lib/nutrition/analysisToItems';
 import { sumItems } from '@/lib/nutrition/totals';
 import { saveMeal, suggestSlot, updateMeal } from '@/lib/db/repos/meals';
 import { announce } from '@/lib/game/announce';
@@ -30,7 +34,9 @@ export default function MealReview() {
   const showLevelUp = useLevelUp();
 
   const [title, setTitle] = useState(draft?.analysis.title ?? '');
-  const [items, setItems] = useState<FoodItem[]>(() => (draft ? analysisToItems(draft.analysis) : []));
+  const [items, setItems] = useState<FoodItem[]>(() =>
+    draft ? analysisToItems(draft.analysis) : [],
+  );
   const [slot, setSlot] = useState<MealSlot>(draft?.slot ?? suggestSlot(Date.now()));
   const [wholeScale, setWholeScale] = useState(1);
   const [adding, setAdding] = useState(false);
@@ -39,20 +45,27 @@ export default function MealReview() {
   const [saving, setSaving] = useState(false);
   const [sliderTouched, setSliderTouched] = useState(false);
 
-  const originalNames = useMemo(() => new Set(draft?.analysis.items.map((i) => i.name) ?? []), [draft]);
+  const originalNames = useMemo(
+    () => new Set(draft?.analysis.items.map((i) => i.name) ?? []),
+    [draft],
+  );
 
   if (!draft) {
     return (
       <div className="p-6 text-center flex flex-col gap-3 items-center">
         <p className="text-bark-700">Nothing to review. Log something first.</p>
-        <button className="btn-primary" onClick={() => nav('/log')}>Go to Log</button>
+        <button className="btn-primary" onClick={() => nav('/log')}>
+          Go to Log
+        </button>
       </div>
     );
   }
 
   const totals = sumItems(items);
   const conf = overallConfidence(items);
-  const editedAiLines = items.filter((i) => i.userEdited && i.ref?.kind === 'ai').length + (draft.analysis.items.length - items.filter((i) => originalNames.has(i.name)).length);
+  const editedAiLines =
+    items.filter((i) => i.userEdited && i.ref?.kind === 'ai').length +
+    (draft.analysis.items.length - items.filter((i) => originalNames.has(i.name)).length);
 
   function update(idx: number, next: FoodItem) {
     if (next.scale !== items[idx].scale) setSliderTouched(true);
@@ -63,7 +76,9 @@ export default function MealReview() {
     const factor = s / wholeScale;
     setWholeScale(s);
     setSliderTouched(true);
-    setItems((arr) => arr.map((it) => ({ ...it, scale: Math.max(0.05, it.scale * factor), userEdited: true })));
+    setItems((arr) =>
+      arr.map((it) => ({ ...it, scale: Math.max(0.05, it.scale * factor), userEdited: true })),
+    );
   }
 
   async function refine() {
@@ -116,21 +131,33 @@ export default function MealReview() {
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <button className="btn-ghost -ml-3 px-3" onClick={() => nav(-1)} aria-label="Back">←</button>
+        <button className="btn-ghost -ml-3 px-3" onClick={() => nav(-1)} aria-label="Back">
+          ←
+        </button>
         <h1 className="text-xl font-black flex-1">Check the estimate</h1>
       </div>
 
       {draft.thumb && (
-        <img src={URL.createObjectURL(draft.thumb)} alt="" className="w-full max-h-48 object-cover rounded-xl" />
+        <img
+          src={URL.createObjectURL(draft.thumb)}
+          alt=""
+          className="w-full max-h-48 object-cover rounded-xl"
+        />
       )}
 
-      <input className="input text-lg font-bold" value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Meal name" />
+      <input
+        className="input text-lg font-bold"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        aria-label="Meal name"
+      />
 
       <div className="card flex items-center justify-between gap-3">
         <div>
           <KcalKj kcal={totals.kcal} size="lg" />
           <div className="text-xs text-bark-500 mt-1">
-            P {Math.round(totals.protein)}g · C {Math.round(totals.carbs)}g · F {Math.round(totals.fat)}g · Fibre {Math.round(totals.fibre)}g
+            P {Math.round(totals.protein)}g · C {Math.round(totals.carbs)}g · F{' '}
+            {Math.round(totals.fat)}g · Fibre {Math.round(totals.fibre)}g
           </div>
         </div>
         <div className="text-right">
@@ -150,20 +177,45 @@ export default function MealReview() {
 
       <ul className="flex flex-col gap-2">
         {items.map((it, i) => (
-          <ItemRow key={it.id} item={it} defaultOpen={it.confidence === 'low'} onChange={(n) => update(i, n)} onRemove={() => setItems((arr) => arr.filter((_, j) => j !== i))} />
+          <ItemRow
+            key={it.id}
+            item={it}
+            defaultOpen={it.confidence === 'low'}
+            onChange={(n) => update(i, n)}
+            onRemove={() => setItems((arr) => arr.filter((_, j) => j !== i))}
+          />
         ))}
       </ul>
-      <button className="btn-secondary" onClick={() => setAdding(true)}>+ Add an item</button>
+      <button className="btn-secondary" onClick={() => setAdding(true)}>
+        + Add an item
+      </button>
 
       <div className="card flex flex-col gap-2">
-        <PortionSlider value={wholeScale} onChange={applyWhole} label="Whole meal (ate half? drag left)" />
+        <PortionSlider
+          value={wholeScale}
+          onChange={applyWhole}
+          label="Whole meal (ate half? drag left)"
+        />
       </div>
 
       <div className="card flex flex-col gap-2">
-        <label className="label" htmlFor="followup">Tell Claude something it missed</label>
+        <label className="label" htmlFor="followup">
+          Tell Claude something it missed
+        </label>
         <div className="flex gap-2">
-          <input id="followup" className="input" placeholder="e.g. it was a large bowl, no dressing" value={followUp} onChange={(e) => setFollowUp(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && refine()} />
-          <button className="btn-secondary px-4" disabled={!followUp.trim() || refining} onClick={refine}>
+          <input
+            id="followup"
+            className="input"
+            placeholder="e.g. it was a large bowl, no dressing"
+            value={followUp}
+            onChange={(e) => setFollowUp(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && refine()}
+          />
+          <button
+            className="btn-secondary px-4"
+            disabled={!followUp.trim() || refining}
+            onClick={refine}
+          >
             {refining ? '…' : 'Ask'}
           </button>
         </div>
@@ -178,7 +230,11 @@ export default function MealReview() {
         {saving ? 'Saving…' : draft.editingEntryId ? 'Save changes' : 'Log it'}
       </button>
       <div className="h-6" />
-      <AddItemSheet open={adding} onClose={() => setAdding(false)} onAdd={(it) => setItems((arr) => [...arr, it])} />
+      <AddItemSheet
+        open={adding}
+        onClose={() => setAdding(false)}
+        onAdd={(it) => setItems((arr) => [...arr, it])}
+      />
     </div>
   );
 }

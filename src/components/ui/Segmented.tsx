@@ -29,7 +29,9 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={`text-left rounded-xl border-2 px-3 py-3 transition active:scale-[0.98] ${
-              active ? 'border-euc-500 bg-euc-100' : 'border-sand-200 bg-sand-50 hover:border-sand-300'
+              active
+                ? 'border-euc-500 bg-euc-100'
+                : 'border-sand-200 bg-sand-50 hover:border-sand-300'
             }`}
           >
             <div className="flex items-center gap-2 font-bold text-bark-900">

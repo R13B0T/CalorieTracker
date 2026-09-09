@@ -30,6 +30,13 @@ export function overallConfidence(items: FoodItem[]): 'high' | 'medium' | 'low' 
   // weakest link weighted by calories: the biggest-calorie item dominates
   const biggest = [...items].sort((a, b) => b.per.kcal * b.scale - a.per.kcal * a.scale)[0];
   const rank = { high: 0, medium: 1, low: 2 };
-  const worst = items.reduce((w, i) => (rank[i.confidence] > rank[w] ? i.confidence : w), 'high' as 'high' | 'medium' | 'low');
-  return rank[biggest.confidence] >= rank[worst] ? biggest.confidence : worst === 'low' && biggest.confidence === 'high' ? 'medium' : worst;
+  const worst = items.reduce(
+    (w, i) => (rank[i.confidence] > rank[w] ? i.confidence : w),
+    'high' as 'high' | 'medium' | 'low',
+  );
+  return rank[biggest.confidence] >= rank[worst]
+    ? biggest.confidence
+    : worst === 'low' && biggest.confidence === 'high'
+      ? 'medium'
+      : worst;
 }

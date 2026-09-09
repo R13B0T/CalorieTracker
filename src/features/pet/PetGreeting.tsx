@@ -30,7 +30,13 @@ export function PetGreeting() {
 
   return (
     <Link to="/pet" className="flex items-center gap-3 active:scale-[0.99] transition">
-      <QuokkaSprite stage={game.pet.stage} mood={game.pet.mood} outfitId={game.pet.outfitId} size={84} animate />
+      <QuokkaSprite
+        stage={game.pet.stage}
+        mood={game.pet.mood}
+        outfitId={game.pet.outfitId}
+        size={84}
+        animate
+      />
       <div className="flex-1 card py-3 relative">
         <div className="absolute -left-2 top-5 h-4 w-4 rotate-45 bg-sand-50" aria-hidden />
         <div className="text-sm font-semibold text-bark-900">{line}</div>

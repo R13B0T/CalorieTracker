@@ -33,7 +33,10 @@ export function applyDayToStreak(
   const s = { ...streak, frozenDays: [...streak.frozenDays] };
   const counts = dayCountsForStreak(day);
   const expectedPrev = shiftDayKey(day.dayKey, -1);
-  const contiguous = s.lastCountedDay === null || s.lastCountedDay === expectedPrev || s.lastCountedDay >= expectedPrev;
+  const contiguous =
+    s.lastCountedDay === null ||
+    s.lastCountedDay === expectedPrev ||
+    s.lastCountedDay >= expectedPrev;
 
   if (counts) {
     s.current = contiguous || s.current === 0 ? s.current + 1 : 1;

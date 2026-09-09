@@ -29,7 +29,12 @@ export type GameEvent =
   | { type: 'exercise_logged'; dayKey: string; countToday: number }
   | { type: 'fast_completed'; dayKey: string }
   | { type: 'quest_claimed'; questId: string }
-  | { type: 'item_purchased'; itemId: string; price: number; kind: 'outfit' | 'habitat' | 'consumable' }
+  | {
+      type: 'item_purchased';
+      itemId: string;
+      price: number;
+      kind: 'outfit' | 'habitat' | 'consumable';
+    }
   | { type: 'recalibrated' }
   | { type: 'search_used'; dayKey: string };
 
@@ -43,7 +48,12 @@ export interface GameResult {
   streak?: { current: number; usedFreeze?: boolean; lost?: boolean };
 }
 
-const empty = (): GameResult => ({ xpGained: 0, coinsGained: 0, newBadges: [], questsCompleted: [] });
+const empty = (): GameResult => ({
+  xpGained: 0,
+  coinsGained: 0,
+  newBadges: [],
+  questsCompleted: [],
+});
 
 async function getNow(): Promise<{ now: number; dayStartHour: number; todayKey: string }> {
   const s = await db.settings.get('me');
@@ -76,7 +86,15 @@ function grantXp(state: GameState, amount: number, res: GameResult) {
   }
 }
 
-function quest(state: GameState, metric: QuestMetric, amount: number, dayKey: string, now: number, res: GameResult, mode: 'add' | 'set' = 'add') {
+function quest(
+  state: GameState,
+  metric: QuestMetric,
+  amount: number,
+  dayKey: string,
+  now: number,
+  res: GameResult,
+  mode: 'add' | 'set' = 'add',
+) {
   const { quests, completed } = bumpQuests(state.quests, metric, amount, dayKey, now, mode);
   state.quests = quests;
   for (const q of completed) {
@@ -127,125 +145,143 @@ async function rewardedMealsToday(dayKey: string): Promise<number> {
 
 export async function applyEvent(event: GameEvent): Promise<GameResult> {
   const { now, dayStartHour, todayKey } = await getNow();
-  return db.transaction('rw', [db.game, db.entries, db.days, db.settings, db.profile, db.weights, db.water], async () => {
-    const state = await loadState();
-    const res = empty();
-    if (!state.firstLogAt && (event.type === 'meal_logged')) state.firstLogAt = now;
+  return db.transaction(
+    'rw',
+    [db.game, db.entries, db.days, db.settings, db.profile, db.weights, db.water],
+    async () => {
+      const state = await loadState();
+      const res = empty();
+      if (!state.firstLogAt && event.type === 'meal_logged') state.firstLogAt = now;
 
-    switch (event.type) {
-      case 'meal_logged': {
-        const e = event.entry;
-        const rewarded = await rewardedMealsToday(e.dayKey);
-        let xp = 0;
-        if (rewarded < XP.mealsRewardedPerDay) {
-          xp += XP.mealLogged;
-          if (e.source === 'photo') xp += XP.photoBonus;
-          if (event.editedAiLines > 0 || event.sliderAdjusted) xp += XP.editedBeforeSaveBonus;
-        }
-        await db.entries.update(e.id, { xpAwarded: xp });
-        grantXp(state, xp, res);
-        bump(state, 'meals');
-        const srcCounter: Partial<Record<Source, string>> = { photo: 'photos', text: 'textLogs', voice: 'voiceLogs', barcode: 'barcodes', search: 'searches' };
-        if (srcCounter[e.source]) bump(state, srcCounter[e.source]!);
-        if (event.editedAiLines > 0) bump(state, 'aiLinesEdited', event.editedAiLines);
-        const hour = localHour(e.loggedAt);
-        if (e.slot === 'breakfast' && hour < 9) bump(state, 'earlyBreakfasts');
-
-        quest(state, 'meals', 1, e.dayKey, now, res);
-        if (e.source === 'photo') quest(state, 'photos', 1, e.dayKey, now, res);
-        if (e.slot === 'breakfast' && hour < 10) quest(state, 'breakfastBefore10', 1, e.dayKey, now, res);
-        if (e.slot === 'dinner' && hour < 20) quest(state, 'dinnerBefore8', 1, e.dayKey, now, res);
-        if (e.items.some((i) => isVegOrFruit(i.name))) quest(state, 'vegItem', 1, e.dayKey, now, res);
-        if (event.sliderAdjusted) quest(state, 'sliderAdjusted', 1, e.dayKey, now, res);
-        // methods used this week
-        const weekStart = shiftDayKey(e.dayKey, -6);
-        const weekEntries = await db.entries.where('dayKey').between(weekStart, e.dayKey, true, true).toArray();
-        const methods = new Set(weekEntries.map((x) => x.source));
-        quest(state, 'methodsUsed', methods.size, e.dayKey, now, res, 'set');
-        // days logged this week (for weekly everyday quest, live progress)
-        const daysThisWeek = new Set(weekEntries.map((x) => x.dayKey)).size;
-        quest(state, 'daysLogged', daysThisWeek, e.dayKey, now, res, 'set');
-        // live protein/fibre check for today's quests (also confirmed at rollover)
-        await liveTargetQuests(state, e.dayKey, now, res);
-        break;
-      }
-      case 'meal_deleted': {
-        const xp = event.entry.xpAwarded ?? 0;
-        state.xp = Math.max(0, state.xp - xp);
-        state.level = levelForXp(state.xp);
-        state.counters.meals = Math.max(0, (state.counters.meals ?? 0) - 1);
-        // Quests are not clawed back; being generous is fine, being punitive is not.
-        break;
-      }
-      case 'water_added': {
-        const glasses = Math.floor(event.addedMl / 250);
-        const todayXp = state.counters[`waterXp:${event.dayKey}`] ?? 0;
-        const xp = Math.min(XP.waterCapPerDay - todayXp, glasses * XP.waterPer250ml);
-        if (xp > 0) {
-          grantXp(state, xp, res);
-          state.counters[`waterXp:${event.dayKey}`] = todayXp + xp;
-        }
-        if (event.totalMl >= event.goalMl && event.totalMl - event.addedMl < event.goalMl) {
-          quest(state, 'waterGoal', 1, event.dayKey, now, res);
-          await db.days.update(event.dayKey, { waterHit: true });
-        }
-        break;
-      }
-      case 'weighed_in': {
-        if (event.firstToday) {
-          grantXp(state, XP.weighIn, res);
-          bump(state, 'weighIns');
-          quest(state, 'weighIn', 1, event.dayKey, now, res);
-        }
-        break;
-      }
-      case 'exercise_logged': {
-        if (event.countToday <= XP.exerciseCapPerDay) grantXp(state, XP.exercise, res);
-        break;
-      }
-      case 'fast_completed': {
-        grantXp(state, XP.fastCompleted, res);
-        bump(state, 'fasts');
-        quest(state, 'fastCompleted', 1, event.dayKey, now, res);
-        break;
-      }
-      case 'quest_claimed': {
-        // Quests auto-claim on completion in this design; kept for API symmetry.
-        break;
-      }
-      case 'item_purchased': {
-        if (state.coins < event.price) throw new Error('Not enough coins');
-        state.coins -= event.price;
-        bump(state, 'purchases');
-        if (event.kind === 'consumable' && event.itemId === 'freeze') {
-          state.streak.freezes = Math.min(COINS.freezeMaxHeld, state.streak.freezes + 1);
-        } else {
-          if (!state.inventory.includes(event.itemId)) state.inventory.push(event.itemId);
-          if (event.kind === 'outfit') {
-            state.counters.outfitsOwned = state.inventory.filter((id) => ['bow', 'sunnies', 'bucket_hat', 'scarf', 'crown'].includes(id)).length;
-            state.pet.outfitId = event.itemId;
+      switch (event.type) {
+        case 'meal_logged': {
+          const e = event.entry;
+          const rewarded = await rewardedMealsToday(e.dayKey);
+          let xp = 0;
+          if (rewarded < XP.mealsRewardedPerDay) {
+            xp += XP.mealLogged;
+            if (e.source === 'photo') xp += XP.photoBonus;
+            if (event.editedAiLines > 0 || event.sliderAdjusted) xp += XP.editedBeforeSaveBonus;
           }
-          if (event.kind === 'habitat') state.pet.habitatId = event.itemId;
-        }
-        break;
-      }
-      case 'recalibrated': {
-        bump(state, 'recalibrations');
-        break;
-      }
-      case 'search_used': {
-        bump(state, 'searches');
-        break;
-      }
-    }
+          await db.entries.update(e.id, { xpAwarded: xp });
+          grantXp(state, xp, res);
+          bump(state, 'meals');
+          const srcCounter: Partial<Record<Source, string>> = {
+            photo: 'photos',
+            text: 'textLogs',
+            voice: 'voiceLogs',
+            barcode: 'barcodes',
+            search: 'searches',
+          };
+          if (srcCounter[e.source]) bump(state, srcCounter[e.source]!);
+          if (event.editedAiLines > 0) bump(state, 'aiLinesEdited', event.editedAiLines);
+          const hour = localHour(e.loggedAt);
+          if (e.slot === 'breakfast' && hour < 9) bump(state, 'earlyBreakfasts');
 
-    checkBadges(state, res, now);
-    await checkEvolution(state, res);
-    state.pet.mood = await computeMood(state, now, dayStartHour, todayKey);
-    state.pet.moodUpdatedAt = now;
-    await db.game.put(state);
-    return res;
-  });
+          quest(state, 'meals', 1, e.dayKey, now, res);
+          if (e.source === 'photo') quest(state, 'photos', 1, e.dayKey, now, res);
+          if (e.slot === 'breakfast' && hour < 10)
+            quest(state, 'breakfastBefore10', 1, e.dayKey, now, res);
+          if (e.slot === 'dinner' && hour < 20)
+            quest(state, 'dinnerBefore8', 1, e.dayKey, now, res);
+          if (e.items.some((i) => isVegOrFruit(i.name)))
+            quest(state, 'vegItem', 1, e.dayKey, now, res);
+          if (event.sliderAdjusted) quest(state, 'sliderAdjusted', 1, e.dayKey, now, res);
+          // methods used this week
+          const weekStart = shiftDayKey(e.dayKey, -6);
+          const weekEntries = await db.entries
+            .where('dayKey')
+            .between(weekStart, e.dayKey, true, true)
+            .toArray();
+          const methods = new Set(weekEntries.map((x) => x.source));
+          quest(state, 'methodsUsed', methods.size, e.dayKey, now, res, 'set');
+          // days logged this week (for weekly everyday quest, live progress)
+          const daysThisWeek = new Set(weekEntries.map((x) => x.dayKey)).size;
+          quest(state, 'daysLogged', daysThisWeek, e.dayKey, now, res, 'set');
+          // live protein/fibre check for today's quests (also confirmed at rollover)
+          await liveTargetQuests(state, e.dayKey, now, res);
+          break;
+        }
+        case 'meal_deleted': {
+          const xp = event.entry.xpAwarded ?? 0;
+          state.xp = Math.max(0, state.xp - xp);
+          state.level = levelForXp(state.xp);
+          state.counters.meals = Math.max(0, (state.counters.meals ?? 0) - 1);
+          // Quests are not clawed back; being generous is fine, being punitive is not.
+          break;
+        }
+        case 'water_added': {
+          const glasses = Math.floor(event.addedMl / 250);
+          const todayXp = state.counters[`waterXp:${event.dayKey}`] ?? 0;
+          const xp = Math.min(XP.waterCapPerDay - todayXp, glasses * XP.waterPer250ml);
+          if (xp > 0) {
+            grantXp(state, xp, res);
+            state.counters[`waterXp:${event.dayKey}`] = todayXp + xp;
+          }
+          if (event.totalMl >= event.goalMl && event.totalMl - event.addedMl < event.goalMl) {
+            quest(state, 'waterGoal', 1, event.dayKey, now, res);
+            await db.days.update(event.dayKey, { waterHit: true });
+          }
+          break;
+        }
+        case 'weighed_in': {
+          if (event.firstToday) {
+            grantXp(state, XP.weighIn, res);
+            bump(state, 'weighIns');
+            quest(state, 'weighIn', 1, event.dayKey, now, res);
+          }
+          break;
+        }
+        case 'exercise_logged': {
+          if (event.countToday <= XP.exerciseCapPerDay) grantXp(state, XP.exercise, res);
+          break;
+        }
+        case 'fast_completed': {
+          grantXp(state, XP.fastCompleted, res);
+          bump(state, 'fasts');
+          quest(state, 'fastCompleted', 1, event.dayKey, now, res);
+          break;
+        }
+        case 'quest_claimed': {
+          // Quests auto-claim on completion in this design; kept for API symmetry.
+          break;
+        }
+        case 'item_purchased': {
+          if (state.coins < event.price) throw new Error('Not enough coins');
+          state.coins -= event.price;
+          bump(state, 'purchases');
+          if (event.kind === 'consumable' && event.itemId === 'freeze') {
+            state.streak.freezes = Math.min(COINS.freezeMaxHeld, state.streak.freezes + 1);
+          } else {
+            if (!state.inventory.includes(event.itemId)) state.inventory.push(event.itemId);
+            if (event.kind === 'outfit') {
+              state.counters.outfitsOwned = state.inventory.filter((id) =>
+                ['bow', 'sunnies', 'bucket_hat', 'scarf', 'crown'].includes(id),
+              ).length;
+              state.pet.outfitId = event.itemId;
+            }
+            if (event.kind === 'habitat') state.pet.habitatId = event.itemId;
+          }
+          break;
+        }
+        case 'recalibrated': {
+          bump(state, 'recalibrations');
+          break;
+        }
+        case 'search_used': {
+          bump(state, 'searches');
+          break;
+        }
+      }
+
+      checkBadges(state, res, now);
+      await checkEvolution(state, res);
+      state.pet.mood = await computeMood(state, now, dayStartHour, todayKey);
+      state.pet.moodUpdatedAt = now;
+      await db.game.put(state);
+      return res;
+    },
+  );
 }
 
 async function liveTargetQuests(state: GameState, dayKey: string, now: number, res: GameResult) {
@@ -257,7 +293,12 @@ async function liveTargetQuests(state: GameState, dayKey: string, now: number, r
   if (t.fibre >= day.targetMacros.fibre) quest(state, 'fibreHit', 1, dayKey, now, res, 'set');
 }
 
-export async function computeMood(state: GameState, now: number, dayStartHour: number, todayKey: string): Promise<Mood> {
+export async function computeMood(
+  state: GameState,
+  now: number,
+  dayStartHour: number,
+  todayKey: string,
+): Promise<Mood> {
   const since24 = now - 24 * 3_600_000;
   const since48 = now - 48 * 3_600_000;
   const recent = await db.entries.where('loggedAt').aboveOrEqual(since48).toArray();
@@ -273,7 +314,10 @@ export async function computeMood(state: GameState, now: number, dayStartHour: n
     waterGoalDaysLast48h: days.filter((d) => d.waterHit).length,
     weighInLast48h: weighed > 0,
     yesterdayWithinTarget: !!yesterday?.withinTarget,
-    proteinFibreHitsLast48h: days.reduce((a, d) => a + (d.proteinHit ? 1 : 0) + (d.fibreHit ? 1 : 0), 0),
+    proteinFibreHitsLast48h: days.reduce(
+      (a, d) => a + (d.proteinHit ? 1 : 0) + (d.fibreHit ? 1 : 0),
+      0,
+    ),
     hoursSinceLastLog: last ? (now - last.loggedAt) / 3_600_000 : null,
     streakLostWithin24h: !!state.streak.lostAt && now - state.streak.lostAt < 24 * 3_600_000,
   });
@@ -291,35 +335,39 @@ export async function runRollover(): Promise<GameResult | null> {
   if (!state) return null;
   if (state.lastRolloverDay === todayKey) return null;
 
-  return db.transaction('rw', [db.game, db.entries, db.days, db.settings, db.profile, db.weights, db.water], async () => {
-    const st = await loadState();
-    if (st.lastRolloverDay === todayKey) return null;
-    const res = empty();
+  return db.transaction(
+    'rw',
+    [db.game, db.entries, db.days, db.settings, db.profile, db.weights, db.water],
+    async () => {
+      const st = await loadState();
+      if (st.lastRolloverDay === todayKey) return null;
+      const res = empty();
 
-    if (!st.lastRolloverDay) {
-      // First run: nothing to close, just roll quests.
-      st.lastRolloverDay = todayKey;
-    } else {
-      let k = st.lastRolloverDay;
-      // Close days from lastRolloverDay up to yesterday.
-      while (k < todayKey) {
-        await closeDay(st, k, now, res);
-        k = shiftDayKey(k, 1);
+      if (!st.lastRolloverDay) {
+        // First run: nothing to close, just roll quests.
+        st.lastRolloverDay = todayKey;
+      } else {
+        let k = st.lastRolloverDay;
+        // Close days from lastRolloverDay up to yesterday.
+        while (k < todayKey) {
+          await closeDay(st, k, now, res);
+          k = shiftDayKey(k, 1);
+        }
+        st.lastRolloverDay = todayKey;
       }
-      st.lastRolloverDay = todayKey;
-    }
-    await ensureDay(todayKey);
-    const rolled = rollQuests(st.quests, todayKey, st.recentQuestTemplates);
-    st.quests = rolled.quests;
-    st.recentQuestTemplates = rolled.recent;
-    // Comeback quest live progress: consecutive days logged ending yesterday.
-    checkBadges(st, res, now);
-    await checkEvolution(st, res);
-    st.pet.mood = await computeMood(st, now, dayStartHour, todayKey);
-    st.pet.moodUpdatedAt = now;
-    await db.game.put(st);
-    return res;
-  });
+      await ensureDay(todayKey);
+      const rolled = rollQuests(st.quests, todayKey, st.recentQuestTemplates);
+      st.quests = rolled.quests;
+      st.recentQuestTemplates = rolled.recent;
+      // Comeback quest live progress: consecutive days logged ending yesterday.
+      checkBadges(st, res, now);
+      await checkEvolution(st, res);
+      st.pet.mood = await computeMood(st, now, dayStartHour, todayKey);
+      st.pet.moodUpdatedAt = now;
+      await db.game.put(st);
+      return res;
+    },
+  );
 }
 
 async function closeDay(state: GameState, dayKey: string, now: number, res: GameResult) {
@@ -358,7 +406,11 @@ async function closeDay(state: GameState, dayKey: string, now: number, res: Game
   const outcome = applyDayToStreak(state.streak, summary, now);
   state.streak = outcome.streak;
   if (outcome.xp) grantXp(state, outcome.xp, res);
-  res.streak = { current: state.streak.current, usedFreeze: outcome.usedFreeze, lost: outcome.lost };
+  res.streak = {
+    current: state.streak.current,
+    usedFreeze: outcome.usedFreeze,
+    lost: outcome.lost,
+  };
   if (outcome.lost && prevCurrent > 0) {
     state.quests = injectComebackQuest(state.quests, shiftDayKey(dayKey, 1));
     state.counters.comebackArmed = 1;
@@ -371,7 +423,9 @@ async function closeDay(state: GameState, dayKey: string, now: number, res: Game
     }
   } else if (!outcome.usedFreeze) {
     // reset comeback progress if a day is missed without freeze
-    state.quests = state.quests.map((q) => (q.templateId === 's_comeback' && !q.completedAt ? { ...q, progress: 0 } : q));
+    state.quests = state.quests.map((q) =>
+      q.templateId === 's_comeback' && !q.completedAt ? { ...q, progress: 0 } : q,
+    );
   }
 
   await db.days.update(dayKey, {

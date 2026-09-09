@@ -12,7 +12,12 @@ export function levelForXp(xp: number): number {
   return level;
 }
 
-export function levelProgress(xp: number): { level: number; into: number; span: number; pct: number } {
+export function levelProgress(xp: number): {
+  level: number;
+  into: number;
+  span: number;
+  pct: number;
+} {
   const level = levelForXp(xp);
   const floor = xpForLevel(level);
   const next = xpForLevel(level + 1);

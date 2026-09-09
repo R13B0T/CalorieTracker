@@ -52,7 +52,15 @@ export function useAnalyse() {
         if (!navigator.onLine) throw new AiError('offline', 'offline');
         const analysis = await args.call(ac.signal);
         const model = args.source === 'photo' ? settings.visionModel : settings.textModel;
-        setDraft({ analysis, source: args.source, slot, rawInput: args.rawInput, imageBase64: args.imageBase64, thumb: args.thumb, model });
+        setDraft({
+          analysis,
+          source: args.source,
+          slot,
+          rawInput: args.rawInput,
+          imageBase64: args.imageBase64,
+          thumb: args.thumb,
+          model,
+        });
         nav('/log/review');
       } catch (e) {
         const err = e instanceof AiError ? e : new AiError('unknown', String(e));
@@ -67,7 +75,8 @@ export function useAnalyse() {
             thumb: args.thumb,
             slot,
           });
-          if (err.kind === 'rate_limited') setRetryIn(Math.ceil((err.retryAfterMs ?? 15000) / 1000));
+          if (err.kind === 'rate_limited')
+            setRetryIn(Math.ceil((err.retryAfterMs ?? 15000) / 1000));
         }
         if (err.kind === 'no_key') {
           toast(describeAiError(err), 'error');

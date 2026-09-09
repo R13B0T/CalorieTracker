@@ -17,7 +17,15 @@ function PetHome() {
   const nav = useNavigate();
   const game = useLiveQuery(() => db.game.get('me'), []);
   const profile = useLiveQuery(() => db.profile.get('me'), []);
-  const daysLogged = useLiveQuery(() => db.entries.orderBy('dayKey').uniqueKeys().then((k) => k.length), [], 0);
+  const daysLogged = useLiveQuery(
+    () =>
+      db.entries
+        .orderBy('dayKey')
+        .uniqueKeys()
+        .then((k) => k.length),
+    [],
+    0,
+  );
   const coachLine = useSessionStore((s) => s.coachLine);
   if (!game || !profile) return null;
   const lp = levelProgress(game.xp);
@@ -41,27 +49,46 @@ function PetHome() {
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-black">{game.pet.name}</h1>
         <div className="flex gap-2">
-          <Link to="badges" className="chip bg-sand-200 text-bark-900">🏅 {game.badges.length}</Link>
-          <Link to="shop" className="chip bg-sun-300 text-bark-900">🪙 {game.coins}</Link>
+          <Link to="badges" className="chip bg-sand-200 text-bark-900">
+            🏅 {game.badges.length}
+          </Link>
+          <Link to="shop" className="chip bg-sun-300 text-bark-900">
+            🪙 {game.coins}
+          </Link>
         </div>
       </header>
 
       <HabitatScene habitatId={game.pet.habitatId}>
         <button onClick={poke} aria-label="Poke your quokka" className="active:scale-95 transition">
-          <QuokkaSprite stage={game.pet.stage} mood={game.pet.mood} outfitId={game.pet.outfitId} size={200} animate />
+          <QuokkaSprite
+            stage={game.pet.stage}
+            mood={game.pet.mood}
+            outfitId={game.pet.outfitId}
+            size={200}
+            animate
+          />
         </button>
       </HabitatScene>
 
       <div className="card flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-black text-lg">Level {game.level} · {game.activeTitle ?? titleForLevel(game.level)}</div>
-            <div className="text-xs text-bark-500">{game.pet.name} {MOOD_COPY[game.pet.mood]}. {nextStage}</div>
+            <div className="font-black text-lg">
+              Level {game.level} · {game.activeTitle ?? titleForLevel(game.level)}
+            </div>
+            <div className="text-xs text-bark-500">
+              {game.pet.name} {MOOD_COPY[game.pet.mood]}. {nextStage}
+            </div>
           </div>
-          <div className="text-right text-xs text-bark-500 font-semibold">{lp.into} / {lp.span} XP</div>
+          <div className="text-right text-xs text-bark-500 font-semibold">
+            {lp.into} / {lp.span} XP
+          </div>
         </div>
         <div className="h-3 rounded-full bg-sand-200 overflow-hidden">
-          <div className="h-full bg-euc-500 rounded-full transition-all" style={{ width: `${lp.pct}%` }} />
+          <div
+            className="h-full bg-euc-500 rounded-full transition-all"
+            style={{ width: `${lp.pct}%` }}
+          />
         </div>
         {coachLine && <p className="text-sm text-bark-700 italic pt-1">"{coachLine.text}"</p>}
       </div>
@@ -75,12 +102,18 @@ function PetHome() {
       <QuestsPanel />
 
       <div className="grid grid-cols-2 gap-3">
-        <button className="card text-left active:scale-[0.98] transition" onClick={() => nav('shop')}>
+        <button
+          className="card text-left active:scale-[0.98] transition"
+          onClick={() => nav('shop')}
+        >
           <div className="text-2xl">🛍️</div>
           <div className="font-black">Shop</div>
           <div className="text-xs text-bark-500">Outfits, habitats, freezes</div>
         </button>
-        <button className="card text-left active:scale-[0.98] transition" onClick={() => nav('badges')}>
+        <button
+          className="card text-left active:scale-[0.98] transition"
+          onClick={() => nav('badges')}
+        >
           <div className="text-2xl">🏅</div>
           <div className="font-black">Badges</div>
           <div className="text-xs text-bark-500">{game.badges.length} earned</div>

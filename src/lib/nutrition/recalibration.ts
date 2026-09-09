@@ -72,7 +72,8 @@ export function computeRecalibration(i: RecalibrationInput): RecalibrationSugges
 
   // Positive error: lost less than expected -> maintenance is lower than we think (or under-logging).
   const errorKcalPerDay = ((actualDeltaKg - expectedDeltaKg) * KCAL_PER_KG_FAT) / windowDays;
-  const adjustmentKcal = Math.round(clamp(-errorKcalPerDay * RECAL.damping, -RECAL.maxAdjust, RECAL.maxAdjust) / 5) * 5;
+  const adjustmentKcal =
+    Math.round(clamp(-errorKcalPerDay * RECAL.damping, -RECAL.maxAdjust, RECAL.maxAdjust) / 5) * 5;
   if (Math.abs(adjustmentKcal) < 25) return null;
 
   const newTdee = Math.round(i.profile.tdee + adjustmentKcal);
@@ -96,7 +97,11 @@ export function computeRecalibration(i: RecalibrationInput): RecalibrationSugges
  * Least-squares slope through the raw weigh-ins (x = days since window start), times the
  * window length. No lag, and daily water-weight noise averages out across the fit.
  */
-export function fittedDeltaKg(weights: WeightEntry[], firstKey: string, windowDays: number): number {
+export function fittedDeltaKg(
+  weights: WeightEntry[],
+  firstKey: string,
+  windowDays: number,
+): number {
   const pts = weights.map((w) => ({ x: daysBetween(firstKey, w.dayKey), y: w.kg }));
   const n = pts.length;
   if (n < 2) return 0;

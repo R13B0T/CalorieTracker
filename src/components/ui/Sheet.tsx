@@ -27,7 +27,11 @@ export function Sheet({
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      role="dialog"
+      aria-modal="true"
+    >
       <button aria-label="Close" className="absolute inset-0 bg-bark-900/40" onClick={onClose} />
       <div
         className={`relative w-full max-w-lg rounded-t-3xl bg-sand-50 shadow-soft safe-bottom animate-pop ${

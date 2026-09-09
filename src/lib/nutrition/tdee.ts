@@ -23,7 +23,13 @@ export function bmr(sex: Sex, weightKg: number, heightCm: number, ageYears: numb
   return sex === 'male' ? base + 5 : base - 161;
 }
 
-export function tdee(sex: Sex, weightKg: number, heightCm: number, ageYears: number, activity: Activity) {
+export function tdee(
+  sex: Sex,
+  weightKg: number,
+  heightCm: number,
+  ageYears: number,
+  activity: Activity,
+) {
   return bmr(sex, weightKg, heightCm, ageYears) * ACTIVITY_FACTORS[activity];
 }
 
@@ -37,7 +43,12 @@ export const MIN_TARGET_KCAL: Record<Sex, number> = { female: 1200, male: 1500 }
  * Daily calorie target from maintenance and a goal rate.
  * 1 kg of body fat is roughly 7700 kcal, so 0.5 kg/week is a 550 kcal/day deficit.
  */
-export function targetKcal(maintenance: number, goal: Goal, rateKgPerWeek: number, sex: Sex): number {
+export function targetKcal(
+  maintenance: number,
+  goal: Goal,
+  rateKgPerWeek: number,
+  sex: Sex,
+): number {
   const dailyDelta = (rateKgPerWeek * KCAL_PER_KG_FAT) / 7;
   let target = maintenance;
   if (goal === 'lose') target = maintenance - dailyDelta;

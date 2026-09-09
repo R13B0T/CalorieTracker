@@ -7,7 +7,11 @@ import { toast } from '@/stores/useSessionStore';
 
 export function FastingWidget() {
   const active = useLiveQuery(() => db.fasting.filter((f) => f.endedAt === undefined).first(), []);
-  const target = useLiveQuery(() => db.settings.get('me').then((s) => s?.fastingDefaultHours ?? 16), [], 16);
+  const target = useLiveQuery(
+    () => db.settings.get('me').then((s) => s?.fastingDefaultHours ?? 16),
+    [],
+    16,
+  );
   const [, tick] = useState(0);
   useEffect(() => {
     if (!active) return;
@@ -29,15 +33,24 @@ export function FastingWidget() {
     <div className="card flex flex-col gap-2 p-3">
       <div className="flex items-center justify-between">
         <span className="font-bold text-sm">⏳ Fasting</span>
-        <span className="text-xs text-bark-500 font-semibold">{active ? `${hours.toFixed(1)} / ${active.targetHours} h` : `${target} h window`}</span>
+        <span className="text-xs text-bark-500 font-semibold">
+          {active ? `${hours.toFixed(1)} / ${active.targetHours} h` : `${target} h window`}
+        </span>
       </div>
       <div className="h-2 rounded-full bg-sand-200 overflow-hidden">
         <div className="h-full bg-fat rounded-full transition-all" style={{ width: `${pct}%` }} />
       </div>
       {active ? (
-        <button className="chip justify-center bg-fat/20 text-fat" onClick={stop}>{pct >= 100 ? 'Finish fast ✓' : 'End fast'}</button>
+        <button className="chip justify-center bg-fat/20 text-fat" onClick={stop}>
+          {pct >= 100 ? 'Finish fast ✓' : 'End fast'}
+        </button>
       ) : (
-        <button className="chip justify-center bg-sand-200 text-bark-700" onClick={() => startFast(target)}>Start fast</button>
+        <button
+          className="chip justify-center bg-sand-200 text-bark-700"
+          onClick={() => startFast(target)}
+        >
+          Start fast
+        </button>
       )}
     </div>
   );

@@ -7,24 +7,58 @@ import { shiftDayKey } from '@/lib/date';
 const DAY = 86_400_000;
 const start = '2026-08-01';
 const profile: UserProfile = {
-  id: 'me', name: 't', sex: 'male', birthYear: 1988, heightCm: 180, startWeightKg: 85, activity: 'moderate', goal: 'lose', rateKgPerWeek: 0.5,
-  tdee: 2775, targetKcal: 2230, macroSplit: { proteinPct: 30, carbsPct: 40, fatPct: 30 }, fibreG: 30, persona: 'sassy',
-  createdAt: Date.UTC(2026, 6, 31), recalibrationLog: [],
+  id: 'me',
+  name: 't',
+  sex: 'male',
+  birthYear: 1988,
+  heightCm: 180,
+  startWeightKg: 85,
+  activity: 'moderate',
+  goal: 'lose',
+  rateKgPerWeek: 0.5,
+  tdee: 2775,
+  targetKcal: 2230,
+  macroSplit: { proteinPct: 30, carbsPct: 40, fatPct: 30 },
+  fibreG: 30,
+  persona: 'sassy',
+  createdAt: Date.UTC(2026, 6, 31),
+  recalibrationLog: [],
 };
 
-function build(days: number, intake: number, weightFn: (i: number) => number, weighEvery = 2, logEvery = 1) {
+function build(
+  days: number,
+  intake: number,
+  weightFn: (i: number) => number,
+  weighEvery = 2,
+  logEvery = 1,
+) {
   const dayLogs: DayLog[] = [];
   const weights: WeightEntry[] = [];
   const intakeByDay: Record<string, number> = {};
   for (let i = 0; i < days; i++) {
     const k = shiftDayKey(start, i);
     const at = Date.UTC(2026, 7, 1 + i, 8);
-    dayLogs.push({ dayKey: k, targetKcal: 2230, targetMacros: { protein: 150, carbs: 220, fat: 74, fibre: 30 }, waterMl: 0, exerciseKcal: 0, eatBackExercise: false, closedAt: at + DAY });
+    dayLogs.push({
+      dayKey: k,
+      targetKcal: 2230,
+      targetMacros: { protein: 150, carbs: 220, fat: 74, fibre: 30 },
+      waterMl: 0,
+      exerciseKcal: 0,
+      eatBackExercise: false,
+      closedAt: at + DAY,
+    });
     if (i % logEvery === 0) intakeByDay[k] = intake;
     if (i % weighEvery === 0) weights.push({ id: String(i), dayKey: k, at, kg: weightFn(i) });
   }
   const todayKey = shiftDayKey(start, days);
-  return { weights, days: dayLogs, intakeByDay, profile, now: Date.UTC(2026, 7, 1 + days, 12), todayKey };
+  return {
+    weights,
+    days: dayLogs,
+    intakeByDay,
+    profile,
+    now: Date.UTC(2026, 7, 1 + days, 12),
+    todayKey,
+  };
 }
 
 describe('weight trend', () => {

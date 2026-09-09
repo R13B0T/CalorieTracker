@@ -9,5 +9,11 @@ export async function addWater(dayKey: string, ml: number): Promise<GameResult> 
   const total = Math.max(0, day.waterMl + ml);
   await db.water.put({ id: newId(), dayKey, at: Date.now(), ml });
   await db.days.update(dayKey, { waterMl: total });
-  return applyEvent({ type: 'water_added', dayKey, totalMl: total, goalMl: settings?.waterGoalMl ?? 2000, addedMl: Math.max(0, ml) });
+  return applyEvent({
+    type: 'water_added',
+    dayKey,
+    totalMl: total,
+    goalMl: settings?.waterGoalMl ?? 2000,
+    addedMl: Math.max(0, ml),
+  });
 }

@@ -54,13 +54,23 @@ export function ApiKeyStep({
             value={value}
             onChange={(e) => onChange(e.target.value)}
           />
-          <button className="btn-secondary px-3" type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide key' : 'Show key'}>
+          <button
+            className="btn-secondary px-3"
+            type="button"
+            onClick={() => setShow((s) => !s)}
+            aria-label={show ? 'Hide key' : 'Show key'}
+          >
             {show ? '🙈' : '👁️'}
           </button>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <button className="btn-secondary" type="button" disabled={!value.trim() || testing} onClick={test}>
+        <button
+          className="btn-secondary"
+          type="button"
+          disabled={!value.trim() || testing}
+          onClick={test}
+        >
           {testing ? 'Checking…' : 'Test key'}
         </button>
         {verified && <span className="text-euc-700 font-bold text-sm">✓ Key works</span>}
@@ -69,8 +79,13 @@ export function ApiKeyStep({
       <div className="card text-xs text-bark-700 flex flex-col gap-2">
         <p className="font-bold text-bark-900">Keep it safe</p>
         <ul className="list-disc pl-4 flex flex-col gap-1">
-          <li>Create a key just for Quokkal at console.anthropic.com, and set a monthly spend limit there.</li>
-          <li>The key lives only in this browser's storage and is sent only to api.anthropic.com.</li>
+          <li>
+            Create a key just for Quokkal at console.anthropic.com, and set a monthly spend limit
+            there.
+          </li>
+          <li>
+            The key lives only in this browser's storage and is sent only to api.anthropic.com.
+          </li>
           <li>Lose the phone? Revoke the key in the console and make a new one.</li>
         </ul>
       </div>

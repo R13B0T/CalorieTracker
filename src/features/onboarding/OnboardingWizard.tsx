@@ -37,9 +37,15 @@ export default function OnboardingWizard() {
   const thisYear = new Date().getFullYear();
   const youValid =
     sex !== null &&
-    typeof birthYear === 'number' && birthYear >= thisYear - 100 && birthYear <= thisYear - 13 &&
-    typeof heightCm === 'number' && heightCm >= 120 && heightCm <= 230 &&
-    typeof weightKg === 'number' && weightKg >= 35 && weightKg <= 300;
+    typeof birthYear === 'number' &&
+    birthYear >= thisYear - 100 &&
+    birthYear <= thisYear - 13 &&
+    typeof heightCm === 'number' &&
+    heightCm >= 120 &&
+    heightCm <= 230 &&
+    typeof weightKg === 'number' &&
+    weightKg >= 35 &&
+    weightKg <= 300;
 
   const input: OnboardingInput | null = useMemo(() => {
     if (!youValid || !activity || !goal || !persona) return null;
@@ -56,7 +62,20 @@ export default function OnboardingWizard() {
       petName,
       apiKey: apiKey || undefined,
     };
-  }, [youValid, activity, goal, persona, name, sex, birthYear, heightCm, weightKg, rate, petName, apiKey]);
+  }, [
+    youValid,
+    activity,
+    goal,
+    persona,
+    name,
+    sex,
+    birthYear,
+    heightCm,
+    weightKg,
+    rate,
+    petName,
+    apiKey,
+  ]);
 
   const preview = input ? buildProfile(input) : null;
 
@@ -138,9 +157,33 @@ export default function OnboardingWizard() {
               />
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <NumberField label="Birth year" value={birthYear} onChange={setBirthYear} min={thisYear - 100} max={thisYear - 13} placeholder="1990" />
-              <NumberField label="Height" value={heightCm} onChange={setHeightCm} unit="cm" min={120} max={230} placeholder="175" />
-              <NumberField label="Weight" value={weightKg} onChange={setWeightKg} unit="kg" min={35} max={300} step={0.1} placeholder="80" />
+              <NumberField
+                label="Birth year"
+                value={birthYear}
+                onChange={setBirthYear}
+                min={thisYear - 100}
+                max={thisYear - 13}
+                placeholder="1990"
+              />
+              <NumberField
+                label="Height"
+                value={heightCm}
+                onChange={setHeightCm}
+                unit="cm"
+                min={120}
+                max={230}
+                placeholder="175"
+              />
+              <NumberField
+                label="Weight"
+                value={weightKg}
+                onChange={setWeightKg}
+                unit="kg"
+                min={35}
+                max={300}
+                step={0.1}
+                placeholder="80"
+              />
             </div>
           </div>
         )}
@@ -149,7 +192,8 @@ export default function OnboardingWizard() {
           <div className="flex flex-col gap-4">
             <h2 className="text-2xl font-black">How active are you?</h2>
             <p className="text-sm text-bark-700">
-              Be honest. Most people pick one level too high, then wonder why the numbers don't work.
+              Be honest. Most people pick one level too high, then wonder why the numbers don't
+              work.
             </p>
             <Segmented
               columns={1}
@@ -230,8 +274,8 @@ export default function OnboardingWizard() {
               onChange={(e) => setPetName(e.target.value)}
             />
             <p className="text-sm text-bark-700">
-              It starts as a joey, grows up at level 10 and becomes a legend at 25. It gets
-              happier when you log, and misses you when you don't. It never judges what you ate.
+              It starts as a joey, grows up at level 10 and becomes a legend at 25. It gets happier
+              when you log, and misses you when you don't. It never judges what you ate.
             </p>
           </div>
         )}
@@ -252,8 +296,17 @@ export default function OnboardingWizard() {
           <div className="flex flex-col gap-4">
             <h2 className="text-2xl font-black">Your plan</h2>
             <div className="card flex flex-col gap-3">
-              <Row label="Estimated maintenance" value={`${preview.tdee.toLocaleString('en-AU')} kcal`} sub={fmtKj(preview.tdee)} />
-              <Row label="Daily target" value={`${preview.targetKcal.toLocaleString('en-AU')} kcal`} sub={fmtKj(preview.targetKcal)} strong />
+              <Row
+                label="Estimated maintenance"
+                value={`${preview.tdee.toLocaleString('en-AU')} kcal`}
+                sub={fmtKj(preview.tdee)}
+              />
+              <Row
+                label="Daily target"
+                value={`${preview.targetKcal.toLocaleString('en-AU')} kcal`}
+                sub={fmtKj(preview.targetKcal)}
+                strong
+              />
               <Row
                 label="Macros"
                 value={`${preview.macroSplit.proteinPct}% protein, ${preview.macroSplit.carbsPct}% carbs, ${preview.macroSplit.fatPct}% fat`}
@@ -274,7 +327,11 @@ export default function OnboardingWizard() {
 
       <div className="pt-4">
         {step === 'summary' ? (
-          <button className="btn-primary w-full text-lg" disabled={!input || saving} onClick={finish}>
+          <button
+            className="btn-primary w-full text-lg"
+            disabled={!input || saving}
+            onClick={finish}
+          >
             {saving ? 'Setting up…' : "Let's go"}
           </button>
         ) : (
@@ -289,7 +346,11 @@ export default function OnboardingWizard() {
               (step === 'pet' && !petName.trim())
             }
           >
-            {step === 'welcome' ? 'Get started' : step === 'key' && !apiKey ? 'Skip for now' : 'Next'}
+            {step === 'welcome'
+              ? 'Get started'
+              : step === 'key' && !apiKey
+                ? 'Skip for now'
+                : 'Next'}
           </button>
         )}
       </div>
@@ -297,12 +358,24 @@ export default function OnboardingWizard() {
   );
 }
 
-function Row({ label, value, sub, strong }: { label: string; value: string; sub?: string; strong?: boolean }) {
+function Row({
+  label,
+  value,
+  sub,
+  strong,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  strong?: boolean;
+}) {
   return (
     <div className="flex items-start justify-between gap-3">
       <span className="text-sm text-bark-700">{label}</span>
       <span className="text-right">
-        <span className={`block ${strong ? 'text-xl font-black text-euc-700' : 'font-bold'}`}>{value}</span>
+        <span className={`block ${strong ? 'text-xl font-black text-euc-700' : 'font-bold'}`}>
+          {value}
+        </span>
         {sub && <span className="block text-xs text-bark-500">{sub}</span>}
       </span>
     </div>

@@ -2,7 +2,15 @@ import { useId } from 'react';
 
 const SNAPS = [0.5, 0.75, 1, 1.5, 2];
 
-export function PortionSlider({ value, onChange, label = 'Portion' }: { value: number; onChange: (v: number) => void; label?: string }) {
+export function PortionSlider({
+  value,
+  onChange,
+  label = 'Portion',
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  label?: string;
+}) {
   const id = useId();
   return (
     <div className="flex flex-col gap-1">
@@ -10,7 +18,9 @@ export function PortionSlider({ value, onChange, label = 'Portion' }: { value: n
         <label htmlFor={id} className="text-xs font-semibold text-bark-700">
           {label}
         </label>
-        <span className="text-xs font-bold text-bark-900">×{value.toFixed(2).replace(/\.?0+$/, '')}</span>
+        <span className="text-xs font-bold text-bark-900">
+          ×{value.toFixed(2).replace(/\.?0+$/, '')}
+        </span>
       </div>
       <input
         id={id}

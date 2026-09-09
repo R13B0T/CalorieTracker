@@ -10,7 +10,7 @@ const EXAMPLES = [
   'Chicken schnitzel with chips and salad from the pub',
   'Large flat white, full cream',
   'Bowl of Weet-Bix with milk and a banana',
-  'Half a Domino\'s pepperoni pizza',
+  "Half a Domino's pepperoni pizza",
 ];
 
 export default function DescribeMeal() {
@@ -37,7 +37,9 @@ export default function DescribeMeal() {
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <button className="btn-ghost -ml-3 px-3" onClick={() => nav(-1)} aria-label="Back">←</button>
+        <button className="btn-ghost -ml-3 px-3" onClick={() => nav(-1)} aria-label="Back">
+          ←
+        </button>
         <h1 className="text-xl font-black">Describe your meal</h1>
       </div>
       <textarea
@@ -51,7 +53,12 @@ export default function DescribeMeal() {
       {!text && (
         <div className="flex flex-wrap gap-2">
           {EXAMPLES.map((ex) => (
-            <button key={ex} type="button" className="chip bg-sand-200 text-bark-700" onClick={() => setText(ex)}>
+            <button
+              key={ex}
+              type="button"
+              className="chip bg-sand-200 text-bark-700"
+              onClick={() => setText(ex)}
+            >
               {ex}
             </button>
           ))}
@@ -66,7 +73,11 @@ export default function DescribeMeal() {
       {busy ? (
         <Thinking onCancel={cancel} />
       ) : (
-        <button className="btn-primary text-lg" disabled={!text.trim() || (retryIn ?? 0) > 0} onClick={go}>
+        <button
+          className="btn-primary text-lg"
+          disabled={!text.trim() || (retryIn ?? 0) > 0}
+          onClick={go}
+        >
           Work it out
         </button>
       )}

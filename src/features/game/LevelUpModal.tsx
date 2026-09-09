@@ -31,18 +31,37 @@ export function LevelUpModal() {
   if (!pending || !game) return null;
   const persona = PERSONAS[profile?.persona ?? 'warm'];
   const line = pick(persona.lines.levelUp, pending.level);
-  const evolvedCopy = pending.evolved === 'adult' ? `${game.pet.name} grew up!` : pending.evolved === 'legend' ? `${game.pet.name} is now a legend!` : null;
+  const evolvedCopy =
+    pending.evolved === 'adult'
+      ? `${game.pet.name} grew up!`
+      : pending.evolved === 'legend'
+        ? `${game.pet.name} is now a legend!`
+        : null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bark-900/60 p-6" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bark-900/60 p-6"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="card w-full max-w-sm text-center flex flex-col items-center gap-3 animate-pop">
         <div className="text-sm font-bold text-euc-700 uppercase tracking-wide">Level up</div>
         <div className="text-6xl font-black text-bark-900">{pending.level}</div>
         <div className="font-bold text-bark-700">{titleForLevel(pending.level)}</div>
-        <QuokkaSprite stage={game.pet.stage} mood="ecstatic" outfitId={game.pet.outfitId} size={140} animate />
+        <QuokkaSprite
+          stage={game.pet.stage}
+          mood="ecstatic"
+          outfitId={game.pet.outfitId}
+          size={140}
+          animate
+        />
         {evolvedCopy && <div className="text-lg font-black text-sun-500">{evolvedCopy}</div>}
         <p className="text-sm text-bark-700">"{line}"</p>
-        <div className="chip bg-sun-300 text-bark-900">+{COINS.levelUpPerLevel * pending.level} coins bonus</div>
-        <button className="btn-primary w-full mt-1" onClick={clear}>Nice</button>
+        <div className="chip bg-sun-300 text-bark-900">
+          +{COINS.levelUpPerLevel * pending.level} coins bonus
+        </div>
+        <button className="btn-primary w-full mt-1" onClick={clear}>
+          Nice
+        </button>
       </div>
     </div>
   );

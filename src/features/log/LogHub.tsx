@@ -13,7 +13,13 @@ const BarcodeScanner = lazy(() => import('./barcode/BarcodeScanner'));
 const FoodSearch = lazy(() => import('./search/FoodSearch'));
 
 const METHODS = [
-  { to: 'photo', emoji: '📸', title: 'Snap a photo', hint: 'Claude itemises what it sees', primary: true },
+  {
+    to: 'photo',
+    emoji: '📸',
+    title: 'Snap a photo',
+    hint: 'Claude itemises what it sees',
+    primary: true,
+  },
   { to: 'text', emoji: '✍️', title: 'Describe it', hint: 'Type what you ate' },
   { to: 'voice', emoji: '🎙️', title: 'Say it', hint: 'Talk, then check the text' },
   { to: 'barcode', emoji: '🏷️', title: 'Scan a barcode', hint: 'Most accurate for packaged food' },
@@ -28,8 +34,12 @@ function Picker() {
     <div className="max-w-lg mx-auto px-4 pt-4 flex flex-col gap-4">
       <h1 className="text-2xl font-black">Log food</h1>
       {!hasKey && (
-        <Link to="/settings/key" className="rounded-xl bg-sun-300/70 px-4 py-3 text-sm font-semibold text-bark-900">
-          No Claude key yet. Photo, text and voice need one. Tap to add it, or use barcode and search meanwhile.
+        <Link
+          to="/settings/key"
+          className="rounded-xl bg-sun-300/70 px-4 py-3 text-sm font-semibold text-bark-900"
+        >
+          No Claude key yet. Photo, text and voice need one. Tap to add it, or use barcode and
+          search meanwhile.
         </Link>
       )}
       {drafts.length > 0 && (
@@ -42,7 +52,9 @@ function Picker() {
               onClick={() => nav(d.kind === 'photo' ? `photo?draft=${d.id}` : `text?draft=${d.id}`)}
             >
               <span>{d.kind === 'photo' ? '📸' : '✍️'}</span>
-              <span className="flex-1 text-sm truncate">{d.text ?? 'Photo waiting for analysis'}</span>
+              <span className="flex-1 text-sm truncate">
+                {d.text ?? 'Photo waiting for analysis'}
+              </span>
               <span className="text-xs text-bark-500">{formatTime(d.createdAt)}</span>
             </button>
           ))}
@@ -55,9 +67,13 @@ function Picker() {
             to={m.to}
             className={`card flex flex-col gap-1 active:scale-[0.98] transition ${m.primary ? 'col-span-2 bg-euc-500 text-white' : ''}`}
           >
-            <span className="text-3xl" aria-hidden>{m.emoji}</span>
+            <span className="text-3xl" aria-hidden>
+              {m.emoji}
+            </span>
             <span className="font-black">{m.title}</span>
-            <span className={`text-xs ${m.primary ? 'text-euc-100' : 'text-bark-500'}`}>{m.hint}</span>
+            <span className={`text-xs ${m.primary ? 'text-euc-100' : 'text-bark-500'}`}>
+              {m.hint}
+            </span>
           </Link>
         ))}
       </div>

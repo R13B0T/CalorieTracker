@@ -4,7 +4,15 @@ import { NumberField } from '@/components/ui/NumberField';
 import type { FoodItem } from '@/lib/db/types';
 import { newId } from '@/lib/id';
 
-export function AddItemSheet({ open, onClose, onAdd }: { open: boolean; onClose: () => void; onAdd: (item: FoodItem) => void }) {
+export function AddItemSheet({
+  open,
+  onClose,
+  onAdd,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (item: FoodItem) => void;
+}) {
   const [name, setName] = useState('');
   const [grams, setGrams] = useState<number | ''>('');
   const [kcal, setKcal] = useState<number | ''>('');
@@ -20,12 +28,24 @@ export function AddItemSheet({ open, onClose, onAdd }: { open: boolean; onClose:
       name: name.trim(),
       grams: typeof grams === 'number' && grams > 0 ? grams : 100,
       scale: 1,
-      per: { kcal, protein: Number(protein) || 0, carbs: Number(carbs) || 0, fat: Number(fat) || 0, fibre: Number(fibre) || 0 },
+      per: {
+        kcal,
+        protein: Number(protein) || 0,
+        carbs: Number(carbs) || 0,
+        fat: Number(fat) || 0,
+        fibre: Number(fibre) || 0,
+      },
       confidence: 'high',
       ref: { kind: 'manual' },
       userEdited: true,
     });
-    setName(''); setGrams(''); setKcal(''); setProtein(''); setCarbs(''); setFat(''); setFibre('');
+    setName('');
+    setGrams('');
+    setKcal('');
+    setProtein('');
+    setCarbs('');
+    setFat('');
+    setFibre('');
     onClose();
   }
 
@@ -33,8 +53,16 @@ export function AddItemSheet({ open, onClose, onAdd }: { open: boolean; onClose:
     <Sheet open={open} onClose={onClose} title="Add an item by hand">
       <div className="flex flex-col gap-3">
         <div>
-          <label className="label" htmlFor="manual-name">Name</label>
-          <input id="manual-name" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tim Tam" />
+          <label className="label" htmlFor="manual-name">
+            Name
+          </label>
+          <input
+            id="manual-name"
+            className="input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Tim Tam"
+          />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <NumberField label="Grams" value={grams} onChange={setGrams} unit="g" min={1} />
@@ -46,7 +74,11 @@ export function AddItemSheet({ open, onClose, onAdd }: { open: boolean; onClose:
           <NumberField label="Fat" value={fat} onChange={setFat} unit="g" min={0} />
           <NumberField label="Fibre" value={fibre} onChange={setFibre} unit="g" min={0} />
         </div>
-        <button className="btn-primary" onClick={submit} disabled={!name.trim() || typeof kcal !== 'number'}>
+        <button
+          className="btn-primary"
+          onClick={submit}
+          disabled={!name.trim() || typeof kcal !== 'number'}
+        >
           Add item
         </button>
       </div>

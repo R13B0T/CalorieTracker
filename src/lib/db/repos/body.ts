@@ -26,10 +26,23 @@ export async function deleteWeight(id: string) {
   await db.weights.delete(id);
 }
 
-export async function logExercise(description: string, kcal: number, minutes: number | undefined, source: 'manual' | 'ai'): Promise<GameResult> {
+export async function logExercise(
+  description: string,
+  kcal: number,
+  minutes: number | undefined,
+  source: 'manual' | 'ai',
+): Promise<GameResult> {
   const { now, todayKey } = await ctx();
   await ensureDay(todayKey);
-  await db.exercise.put({ id: newId(), dayKey: todayKey, at: now, description, minutes, kcal, source });
+  await db.exercise.put({
+    id: newId(),
+    dayKey: todayKey,
+    at: now,
+    description,
+    minutes,
+    kcal,
+    source,
+  });
   const all = await db.exercise.where('dayKey').equals(todayKey).toArray();
   await db.days.update(todayKey, { exerciseKcal: all.reduce((a, e) => a + e.kcal, 0) });
   return applyEvent({ type: 'exercise_logged', dayKey: todayKey, countToday: all.length });
@@ -69,7 +82,13 @@ export async function applyRecalibration(s: RecalibrationSuggestion): Promise<vo
     lastRecalibratedAt: now,
     recalibrationLog: [
       ...profile.recalibrationLog,
-      { at: now, expectedDeltaKg: s.expectedDeltaKg, actualDeltaKg: s.actualDeltaKg, adjustmentKcal: s.adjustmentKcal, newTargetKcal: s.newTargetKcal },
+      {
+        at: now,
+        expectedDeltaKg: s.expectedDeltaKg,
+        actualDeltaKg: s.actualDeltaKg,
+        adjustmentKcal: s.adjustmentKcal,
+        newTargetKcal: s.newTargetKcal,
+      },
     ],
   });
   await applyEvent({ type: 'recalibrated' });
@@ -84,12 +103,19 @@ export async function dismissRecalibration(): Promise<void> {
 }
 
 /** Update targets manually from Settings; also refreshes today's snapshot. */
-export async function setTargets(patch: { targetKcal?: number; macroSplit?: { proteinPct: number; carbsPct: number; fatPct: number }; fibreG?: number }) {
+export async function setTargets(patch: {
+  targetKcal?: number;
+  macroSplit?: { proteinPct: number; carbsPct: number; fatPct: number };
+  fibreG?: number;
+}) {
   const profile = await db.profile.get('me');
   if (!profile) return;
   const next = { ...profile, ...patch };
   await db.profile.put(next);
   const { todayKey } = await ctx();
   const g = macroGrams(next.targetKcal, next.macroSplit);
-  await db.days.update(todayKey, { targetKcal: next.targetKcal, targetMacros: { ...g, fibre: next.fibreG } });
+  await db.days.update(todayKey, {
+    targetKcal: next.targetKcal,
+    targetMacros: { ...g, fibre: next.fibreG },
+  });
 }
