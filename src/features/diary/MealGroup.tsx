@@ -10,6 +10,7 @@ import { Sheet } from '@/components/ui/Sheet';
 import { ConfidenceBadge } from '@/components/ui/ConfidenceBadge';
 import { overallConfidence } from '@/lib/nutrition/analysisToItems';
 import { Thumb } from './Thumb';
+import { KcalKj } from '@/components/ui/KcalKj';
 
 const LABEL: Record<MealSlot, { label: string; emoji: string }> = {
   breakfast: { label: 'Breakfast', emoji: '🌅' },
@@ -26,7 +27,7 @@ export function MealGroup({ slot, entries }: { slot: MealSlot; entries: FoodEntr
         <h2 className="font-black text-bark-700">
           {LABEL[slot].emoji} {LABEL[slot].label}
         </h2>
-        <span className="text-sm font-bold text-bark-500">{Math.round(total)} kcal</span>
+        <KcalKj kcal={total} size="sm" className="text-bark-500" />
       </div>
       <ul className="flex flex-col gap-2">
         {entries.map((e) => (
@@ -103,7 +104,7 @@ function EntryCard({ entry }: { entry: FoodEntry }) {
             <ConfidenceBadge level={overallConfidence(entry.items)} compact />
           </div>
         </div>
-        <div className="font-black text-lg">{Math.round(n.kcal)}</div>
+        <KcalKj kcal={n.kcal} size="sm" />
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title={entry.title}>
         <ul className="flex flex-col gap-1 text-sm mb-4">
@@ -112,7 +113,7 @@ function EntryCard({ entry }: { entry: FoodEntry }) {
               <span className="truncate">
                 {i.name} <span className="text-bark-500">{Math.round(i.grams * i.scale)} g</span>
               </span>
-              <span className="font-bold">{Math.round(i.per.kcal * i.scale)}</span>
+              <KcalKj kcal={i.per.kcal * i.scale} size="sm" />
             </li>
           ))}
         </ul>

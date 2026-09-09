@@ -5,6 +5,7 @@ import { prepareImage, base64ToBlob } from '@/lib/ai/image';
 import { db } from '@/lib/db/db';
 import { useAnalyse } from '../useAnalyse';
 import { Thinking } from '../Thinking';
+import { buildPhotoContext } from './context';
 
 export default function PhotoCapture() {
   const nav = useNavigate();
@@ -20,6 +21,8 @@ export default function PhotoCapture() {
     width?: number;
     height?: number;
   } | null>(null);
+  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [ingredient, setIngredient] = useState('');
   const [hint, setHint] = useState('');
   const [preparing, setPreparing] = useState(false);
   const { run, cancel, busy, error, retryIn } = useAnalyse();
@@ -33,6 +36,7 @@ export default function PhotoCapture() {
         // The diary thumbnail is intentionally tiny. Use the analysis image for
         // this full-width preview so restored drafts remain crisp.
         setPreview(URL.createObjectURL(base64ToBlob(d.imageBase64)));
+        setHint(d.text ?? '');
       }
     });
   }, [draftId]);
@@ -68,14 +72,26 @@ export default function PhotoCapture() {
 
   async function go() {
     if (!prepared) return;
+    const context = buildPhotoContext(ingredients, ingredient, hint);
     await run({
       source: 'photo',
       imageBase64: prepared.base64,
       thumb: prepared.thumb,
-      rawInput: hint || undefined,
-      call: (signal) => analyseMealPhoto(prepared.base64, hint, { signal }),
+      rawInput: context || undefined,
+      call: (signal) => analyseMealPhoto(prepared.base64, context, { signal }),
     });
     if (draftId) await db.drafts.delete(draftId);
+  }
+
+  function addIngredient() {
+    const next = ingredient.trim();
+    if (!next) return;
+    setIngredients((current) =>
+      current.some((name) => name.toLowerCase() === next.toLowerCase())
+        ? current
+        : [...current, next],
+    );
+    setIngredient('');
   }
 
   function clearPhoto() {
@@ -160,9 +176,59 @@ export default function PhotoCapture() {
         </ul>
       </div>
 
+      <div className="card flex flex-col gap-2">
+        <div>
+          <label className="label" htmlFor="photo-ingredient">
+            Add known ingredients
+          </label>
+          <p className="text-xs text-bark-500">
+            Useful for oils, sauces, fillings or anything hidden in the photo.
+          </p>
+        </div>
+        {ingredients.length > 0 && (
+          <div className="flex flex-wrap gap-1.5" aria-label="Ingredients included in analysis">
+            {ingredients.map((name) => (
+              <button
+                key={name}
+                type="button"
+                className="chip bg-euc-100 text-euc-700"
+                onClick={() => setIngredients((current) => current.filter((item) => item !== name))}
+                aria-label={`Remove ${name}`}
+              >
+                {name} <span aria-hidden>×</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <input
+            id="photo-ingredient"
+            className="input"
+            placeholder="Olive oil, feta, pesto…"
+            value={ingredient}
+            onChange={(e) => setIngredient(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addIngredient();
+              }
+            }}
+            disabled={busy}
+          />
+          <button
+            type="button"
+            className="btn-secondary px-4"
+            disabled={!ingredient.trim() || busy}
+            onClick={addIngredient}
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
       <input
         className="input"
-        placeholder="Optional hint: large bowl, cooked in butter, half eaten…"
+        placeholder="Optional note: large bowl, half eaten…"
         value={hint}
         onChange={(e) => setHint(e.target.value)}
         disabled={busy}

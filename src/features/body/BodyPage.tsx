@@ -18,10 +18,13 @@ import { toast } from '@/stores/useSessionStore';
 import { formatDayLabel, formatTime, toDayKey } from '@/lib/date';
 import type { RecalibrationSuggestion } from '@/lib/nutrition/recalibration';
 import { RECAL } from '@/lib/nutrition/recalibration';
+import { KcalKj } from '@/components/ui/KcalKj';
+import { formatEnergy } from '@/lib/nutrition/units';
 
 export default function BodyPage() {
   const profile = useLiveQuery(() => db.profile.get('me'), []);
   const settings = useLiveQuery(() => db.settings.get('me'), []);
+  const energyUnit = settings?.energyUnit ?? 'kcal';
   const weights = useLiveQuery(() => db.weights.orderBy('at').toArray(), [], []);
   const todayKey = toDayKey(
     Date.now() + (settings?.timeOffsetMs ?? 0),
@@ -81,12 +84,12 @@ export default function BodyPage() {
             Over the last {suggestion.windowDays} days you logged {suggestion.adherencePct}% of
             days. Expected change {suggestion.expectedDeltaKg.toFixed(1)} kg, actual{' '}
             {suggestion.actualDeltaKg.toFixed(1)} kg. That suggests your maintenance is closer to{' '}
-            <b>{suggestion.newTdee.toLocaleString('en-AU')} kcal</b>.
+            <b>{formatEnergy(suggestion.newTdee, energyUnit)}</b>.
           </p>
           <p className="text-sm text-bark-700">
-            New daily target: <b>{suggestion.newTargetKcal.toLocaleString('en-AU')} kcal</b> (
+            New daily target: <b>{formatEnergy(suggestion.newTargetKcal, energyUnit)}</b> (
             {suggestion.adjustmentKcal > 0 ? '+' : ''}
-            {suggestion.adjustmentKcal}).
+            {formatEnergy(suggestion.adjustmentKcal, energyUnit)}).
           </p>
           <div className="flex gap-2">
             <button
@@ -200,8 +203,8 @@ export default function BodyPage() {
                   {e.description}
                   {e.minutes ? ` · ${e.minutes} min` : ''}
                 </span>
-                <span className="font-bold">
-                  {Math.round(e.kcal)} kcal{' '}
+                <span className="font-bold flex items-center">
+                  <KcalKj kcal={e.kcal} size="sm" />{' '}
                   <button
                     className="text-berry-500 text-xs ml-2"
                     onClick={() => deleteExercise(e.id)}

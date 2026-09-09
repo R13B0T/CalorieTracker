@@ -22,8 +22,9 @@ import {
 import { toast } from '@/stores/useSessionStore';
 import { macroGrams } from '@/lib/nutrition/tdee';
 import { isStandalone, promptInstall } from '@/lib/pwa/InstallHint';
-import type { Persona } from '@/lib/db/types';
+import type { EnergyUnit, Persona } from '@/lib/db/types';
 import { COINS } from '@/lib/game/rules';
+import { energyFromKcal, energyToKcal, formatEnergy } from '@/lib/nutrition/units';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -195,13 +196,15 @@ function PersonaCard() {
 
 function TargetsCard() {
   const profile = useLiveQuery(() => db.profile.get('me'), []);
-  const [kcal, setKcal] = useState<number | ''>('');
+  const settings = useLiveQuery(() => db.settings.get('me'), []);
+  const unit = settings?.energyUnit ?? 'kcal';
+  const [energy, setEnergy] = useState<number | ''>('');
   const [p, setP] = useState<number | ''>('');
   const [f, setF] = useState<number | ''>('');
   const [fibre, setFibre] = useState<number | ''>('');
   useEffect(() => {
     if (!profile) return;
-    setKcal(profile.targetKcal);
+    setEnergy(Math.round(energyFromKcal(profile.targetKcal, unit)));
     setP(profile.macroSplit.proteinPct);
     setF(profile.macroSplit.fatPct);
     setFibre(profile.fibreG);
@@ -211,18 +214,20 @@ function TargetsCard() {
     profile?.macroSplit.fatPct,
     profile?.fibreG,
     profile,
+    unit,
   ]);
   if (!profile) return null;
+  const targetKcal = typeof energy === 'number' ? energyToKcal(energy, unit) : null;
   const carbs =
     typeof p === 'number' && typeof f === 'number' ? 100 - p - f : profile.macroSplit.carbsPct;
   const grams =
-    typeof kcal === 'number' && typeof p === 'number' && typeof f === 'number' && carbs >= 0
-      ? macroGrams(kcal, { proteinPct: p, carbsPct: carbs, fatPct: f })
+    targetKcal !== null && typeof p === 'number' && typeof f === 'number' && carbs >= 0
+      ? macroGrams(targetKcal, { proteinPct: p, carbsPct: carbs, fatPct: f })
       : null;
   const valid =
-    typeof kcal === 'number' &&
-    kcal >= 1000 &&
-    kcal <= 6000 &&
+    targetKcal !== null &&
+    targetKcal >= 1000 &&
+    targetKcal <= 6000 &&
     typeof p === 'number' &&
     typeof f === 'number' &&
     carbs >= 5 &&
@@ -231,16 +236,16 @@ function TargetsCard() {
   return (
     <Section title="Targets">
       <p className="text-xs text-bark-500">
-        Maintenance estimate {profile.tdee.toLocaleString('en-AU')} kcal. Recalibration from real
-        weigh-ins happens on the Body tab. Edit here if a professional gave you numbers.
+        Maintenance estimate {formatEnergy(profile.tdee, unit)}. Recalibration from real weigh-ins
+        happens on the Body tab. Edit here if a professional gave you numbers.
       </p>
       <NumberField
-        label="Daily calories"
-        value={kcal}
-        onChange={setKcal}
-        unit="kcal"
-        min={1000}
-        max={6000}
+        label="Daily energy"
+        value={energy}
+        onChange={setEnergy}
+        unit={unit}
+        min={Math.round(energyFromKcal(1000, unit))}
+        max={Math.round(energyFromKcal(6000, unit))}
         step={10}
       />
       <div className="grid grid-cols-3 gap-2">
@@ -262,7 +267,7 @@ function TargetsCard() {
         disabled={!valid}
         onClick={async () => {
           await setTargets({
-            targetKcal: kcal as number,
+            targetKcal: targetKcal as number,
             macroSplit: { proteinPct: p as number, carbsPct: carbs, fatPct: f as number },
             fibreG: Number(fibre) || profile.fibreG,
           });
@@ -280,12 +285,22 @@ function PrefsCard() {
   if (!s) return null;
   return (
     <Section title="Preferences">
-      <Toggle
-        label="Show kilojoules"
-        hint="Alongside kcal, so labels are easy to reconcile"
-        value={s.showKj}
-        onChange={(v) => updateSettings({ showKj: v })}
-      />
+      <div>
+        <span className="label">Energy unit</span>
+        <Segmented<EnergyUnit>
+          columns={2}
+          value={s.energyUnit ?? 'kcal'}
+          onChange={(energyUnit) => updateSettings({ energyUnit })}
+          options={[
+            { value: 'kcal', label: 'Calories (kcal)' },
+            { value: 'kJ', label: 'Kilojoules (kJ)' },
+          ]}
+        />
+        <p className="text-xs text-bark-500 mt-2">
+          Changes energy displays and the default unit for manual entries. Stored values stay
+          consistent when you switch.
+        </p>
+      </div>
       <Toggle
         label="Eat back exercise"
         hint="Add logged exercise to the food budget. Off by default because trackers overstate burn."

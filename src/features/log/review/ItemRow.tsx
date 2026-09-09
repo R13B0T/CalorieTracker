@@ -4,7 +4,7 @@ import { ConfidenceBadge } from '@/components/ui/ConfidenceBadge';
 import { PortionSlider } from '@/components/ui/Slider';
 import { MacroMini } from '@/components/ui/MacroBar';
 import { scaled } from '@/lib/nutrition/totals';
-import { kcalToKj } from '@/lib/nutrition/units';
+import { KcalKj } from '@/components/ui/KcalKj';
 
 export function ItemRow({
   item,
@@ -39,15 +39,10 @@ export function ItemRow({
           <div className="font-bold text-bark-900 truncate">{item.name}</div>
           <div className="flex items-center gap-2 mt-0.5">
             <ConfidenceBadge level={item.confidence} />
-            <span className="text-xs text-bark-500">
-              {grams} g · {Math.round(kcalToKj(n.kcal))} kJ
-            </span>
+            <span className="text-xs text-bark-500">{grams} g</span>
           </div>
         </div>
-        <div className="text-right shrink-0">
-          <div className="font-black text-lg leading-tight">{Math.round(n.kcal)}</div>
-          <div className="text-[10px] text-bark-500 font-semibold">kcal</div>
-        </div>
+        <KcalKj kcal={n.kcal} size="sm" className="shrink-0" />
       </button>
       <MacroMini p={n.protein} c={n.carbs} f={n.fat} />
       {open && (

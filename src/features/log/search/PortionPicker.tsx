@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Sheet } from '@/components/ui/Sheet';
 import { portionsFor } from '@/lib/food/portions';
+import { KcalKj } from '@/components/ui/KcalKj';
 
 export function PortionPicker({
   open,
@@ -58,7 +59,7 @@ export function PortionPicker({
             aria-label="Grams"
           />
           <span className="text-sm text-bark-700">
-            g · <b>{Math.round((kcal100 * grams) / 100)}</b> kcal
+            g · <KcalKj kcal={(kcal100 * grams) / 100} size="sm" />
           </span>
         </div>
         <button

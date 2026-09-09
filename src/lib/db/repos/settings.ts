@@ -3,7 +3,7 @@ import type { Settings } from '../types';
 import { DEFAULT_SETTINGS } from '../seed';
 
 export async function getSettings(): Promise<Settings> {
-  return (await db.settings.get('me')) ?? DEFAULT_SETTINGS;
+  return { ...DEFAULT_SETTINGS, ...(await db.settings.get('me')) };
 }
 
 export async function updateSettings(patch: Partial<Settings>): Promise<void> {

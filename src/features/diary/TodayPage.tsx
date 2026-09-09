@@ -13,6 +13,7 @@ import { FastingWidget } from './FastingWidget';
 import { PetGreeting } from '@/features/pet/PetGreeting';
 import { StreakChip } from '@/features/game/StreakChip';
 import type { MealSlot } from '@/lib/db/types';
+import { formatEnergy } from '@/lib/nutrition/units';
 
 const SLOT_ORDER: MealSlot[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -20,6 +21,7 @@ export default function TodayPage() {
   const nav = useNavigate();
   const settings = useLiveQuery(() => db.settings.get('me'), []);
   const dayStartHour = settings?.dayStartHour ?? 4;
+  const energyUnit = settings?.energyUnit ?? 'kcal';
   const todayKey = toDayKey(Date.now() + (settings?.timeOffsetMs ?? 0), dayStartHour);
   const [offset, setOffset] = useState(0);
   const dayKey = shiftDayKey(todayKey, offset);
@@ -90,10 +92,9 @@ export default function TodayPage() {
             className={remaining < 0 ? 'text-berry-500' : ''}
           />
           <div className="text-xs text-bark-500">
-            {Math.round(totals.kcal).toLocaleString('en-AU')} eaten of{' '}
-            {Math.round(targetKcal).toLocaleString('en-AU')}
+            {formatEnergy(totals.kcal, energyUnit)} eaten of {formatEnergy(targetKcal, energyUnit)}
             {day?.exerciseKcal
-              ? ` (+${Math.round(day.exerciseKcal)} exercise${day.eatBackExercise ? '' : ', not eaten back'})`
+              ? ` (+${formatEnergy(day.exerciseKcal, energyUnit)} exercise${day.eatBackExercise ? '' : ', not eaten back'})`
               : ''}
           </div>
         </div>

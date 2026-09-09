@@ -22,7 +22,7 @@ export function KcalRing({
       height={size}
       viewBox={`0 0 ${size} ${size}`}
       role="img"
-      aria-label={`${Math.round(pct * 100)} percent of calorie target`}
+      aria-label={`${Math.round(pct * 100)} percent of energy target`}
     >
       <circle
         cx={size / 2}

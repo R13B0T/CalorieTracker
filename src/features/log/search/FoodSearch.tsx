@@ -11,9 +11,13 @@ import { suggestSlot } from '@/lib/db/repos/meals';
 import { applyEvent } from '@/lib/game/engine';
 import { toDayKey } from '@/lib/date';
 import { db } from '@/lib/db/db';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { formatEnergy } from '@/lib/nutrition/units';
 
 export default function FoodSearch() {
   const nav = useNavigate();
+  const settings = useLiveQuery(() => db.settings.get('me'), []);
+  const energyUnit = settings?.energyUnit ?? 'kcal';
   const setDraft = useSessionStore((s) => s.setDraft);
   const [q, setQ] = useState('');
   const [hits, setHits] = useState<AfcdHit[]>([]);
@@ -133,7 +137,7 @@ export default function FoodSearch() {
               >
                 <span className="text-sm">{h.row[1]}</span>
                 <span className="text-xs text-bark-500 shrink-0">
-                  {Math.round(kjToKcal(h.row[2]))} kcal/100g
+                  {formatEnergy(kjToKcal(h.row[2]), energyUnit)}/100g
                 </span>
               </button>
             </li>
@@ -180,7 +184,7 @@ export default function FoodSearch() {
                     {p.name}
                   </span>
                   <span className="text-xs text-bark-500 shrink-0">
-                    {Math.round(p.per100.kcal)} kcal/100g
+                    {formatEnergy(p.per100.kcal, energyUnit)}/100g
                   </span>
                 </button>
               </li>

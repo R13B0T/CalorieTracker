@@ -7,6 +7,7 @@ export type Activity = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_act
 export type Goal = 'lose' | 'maintain' | 'gain';
 export type Mood = 'ecstatic' | 'happy' | 'content' | 'sleepy' | 'peckish' | 'worried';
 export type PetStage = 'joey' | 'adult' | 'legend';
+export type EnergyUnit = 'kcal' | 'kJ';
 
 /** Nutrients per the stored quantity. kJ is always derived, never stored. */
 export interface Nutrients {
@@ -190,7 +191,10 @@ export interface Settings {
   visionModel: string;
   textModel: string;
   eatBackExercise: boolean;
-  showKj: boolean;
+  /** Preferred energy unit for display and manual entry. Values remain stored in kcal. */
+  energyUnit: EnergyUnit;
+  /** Legacy setting retained so older exports remain importable. */
+  showKj?: boolean;
   dayStartHour: number;
   fastingDefaultHours: number;
   waterGoalMl: number;

@@ -109,6 +109,66 @@ body {
   animation: bob 2.4s ease-in-out infinite;
 }
 
+.quokka-render {
+  position: relative;
+  display: inline-block;
+  width: var(--quokka-size);
+  height: var(--quokka-size);
+  flex: 0 0 auto;
+  filter: drop-shadow(0 10px 10px rgb(47 33 24 / 0.28));
+  isolation: isolate;
+}
+
+.quokka-render::before,
+.quokka-render::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.quokka-render > img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(var(--quokka-scale));
+  transform-origin: bottom center;
+  user-select: none;
+}
+
+.quokka-render.quokka-legend::before {
+  inset: 5%;
+  z-index: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(248 212 136 / 0.62), transparent 68%);
+  box-shadow: 0 0 28px rgb(242 181 68 / 0.62);
+  opacity: 1;
+}
+
+.quokka-render.quokka-legend::after {
+  inset: 1%;
+  z-index: 2;
+  border: 1px solid rgb(255 250 242 / 0.58);
+  border-radius: 9999px;
+  opacity: 0.7;
+  animation: legend-glow 2.8s ease-in-out infinite;
+}
+
+@keyframes legend-glow {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+}
+
 @keyframes blink {
   0%,
   92%,

@@ -12,6 +12,8 @@ import { useSessionStore } from '@/stores/useSessionStore';
 import { PortionPicker } from '../search/PortionPicker';
 import { Thumb } from '@/features/diary/Thumb';
 import { formatDayLabel, toDayKey } from '@/lib/date';
+import { KcalKj } from '@/components/ui/KcalKj';
+import { formatEnergy } from '@/lib/nutrition/units';
 
 type Tab = 'meals' | 'items';
 
@@ -33,6 +35,7 @@ export default function RecentFoods() {
   const [basket, setBasket] = useState<FoodItem[]>([]);
 
   const settings = useLiveQuery(() => db.settings.get('me'), []);
+  const energyUnit = settings?.energyUnit ?? 'kcal';
   const todayKey = toDayKey(
     Date.now() + (settings?.timeOffsetMs ?? 0),
     settings?.dayStartHour ?? 4,
@@ -242,7 +245,7 @@ export default function RecentFoods() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-black text-lg">{Math.round(n.kcal)}</div>
+                      <KcalKj kcal={n.kcal} size="sm" />
                       <div className="text-[10px] text-bark-500 font-semibold">log again</div>
                     </div>
                   </button>
@@ -271,7 +274,7 @@ export default function RecentFoods() {
                   </span>
                   <span className="flex-1 text-sm truncate">{it.name}</span>
                   <span className="text-xs text-bark-500 shrink-0">
-                    {Math.round(it.kcal100)} kcal/100g
+                    {formatEnergy(it.kcal100, energyUnit)}/100g
                   </span>
                 </button>
               </li>

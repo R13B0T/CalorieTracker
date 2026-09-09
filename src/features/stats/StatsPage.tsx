@@ -6,9 +6,11 @@ import { sumEntries } from '@/lib/nutrition/totals';
 import { weightTrend } from '@/lib/nutrition/trend';
 import { WeightChart } from '@/features/body/WeightChart';
 import { KcalKj } from '@/components/ui/KcalKj';
+import { formatEnergy } from '@/lib/nutrition/units';
 
 export default function StatsPage() {
   const settings = useLiveQuery(() => db.settings.get('me'), []);
+  const energyUnit = settings?.energyUnit ?? 'kcal';
   const profile = useLiveQuery(() => db.profile.get('me'), []);
   const [range, setRange] = useState<7 | 30>(7);
   const todayKey = toDayKey(
@@ -81,19 +83,25 @@ export default function StatsPage() {
             <div>
               Within 10% on <b className="text-bark-900">{withinCount}</b> days
             </div>
-            <div>Target avg {Math.round(avg((d) => d.target)).toLocaleString('en-AU')} kcal</div>
+            <div>
+              Target avg{' '}
+              {formatEnergy(
+                avg((d) => d.target),
+                energyUnit,
+              )}
+            </div>
           </div>
         </div>
         <div
           className="flex items-end gap-[3px] h-32"
           role="img"
-          aria-label="Daily calories versus target"
+          aria-label="Daily energy versus target"
         >
           {perDay.map((d) => (
             <div
               key={d.key}
               className="flex-1 flex flex-col justify-end h-full relative"
-              title={`${d.key}: ${Math.round(d.kcal)} / ${Math.round(d.target)} kcal`}
+              title={`${d.key}: ${formatEnergy(d.kcal, energyUnit)} / ${formatEnergy(d.target, energyUnit)}`}
             >
               {d.target > 0 && (
                 <div
