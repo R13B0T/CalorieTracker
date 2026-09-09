@@ -13,9 +13,13 @@ export default function PhotoCapture() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [prepared, setPrepared] = useState<{ base64: string; thumb: Blob; bytes: number } | null>(
-    null,
-  );
+  const [prepared, setPrepared] = useState<{
+    base64: string;
+    thumb: Blob;
+    bytes: number;
+    width?: number;
+    height?: number;
+  } | null>(null);
   const [hint, setHint] = useState('');
   const [preparing, setPreparing] = useState(false);
   const { run, cancel, busy, error, retryIn } = useAnalyse();
@@ -26,7 +30,9 @@ export default function PhotoCapture() {
       if (d?.imageBase64) {
         const thumb = d.thumb ?? base64ToBlob(d.imageBase64);
         setPrepared({ base64: d.imageBase64, thumb, bytes: d.imageBase64.length * 0.75 });
-        setPreview(URL.createObjectURL(thumb));
+        // The diary thumbnail is intentionally tiny. Use the analysis image for
+        // this full-width preview so restored drafts remain crisp.
+        setPreview(URL.createObjectURL(base64ToBlob(d.imageBase64)));
       }
     });
   }, [draftId]);
@@ -43,8 +49,16 @@ export default function PhotoCapture() {
     setPreparing(true);
     try {
       const p = await prepareImage(file);
-      setPrepared({ base64: p.base64, thumb: p.thumb, bytes: p.bytes });
-      setPreview(URL.createObjectURL(p.thumb));
+      setPrepared({
+        base64: p.base64,
+        thumb: p.thumb,
+        bytes: p.bytes,
+        width: p.width,
+        height: p.height,
+      });
+      // Keep the 256px thumbnail for diary rows, but preview the same clean,
+      // larger image that will actually be sent for analysis.
+      setPreview(URL.createObjectURL(base64ToBlob(p.base64)));
     } catch (e) {
       console.error(e);
     } finally {
@@ -62,6 +76,14 @@ export default function PhotoCapture() {
       call: (signal) => analyseMealPhoto(prepared.base64, hint, { signal }),
     });
     if (draftId) await db.drafts.delete(draftId);
+  }
+
+  function clearPhoto() {
+    setPreview(null);
+    setPrepared(null);
+    // Selecting the same photo again must still fire an input change event.
+    if (cameraRef.current) cameraRef.current.value = '';
+    if (galleryRef.current) galleryRef.current.value = '';
   }
 
   return (
@@ -90,17 +112,19 @@ export default function PhotoCapture() {
       />
 
       {preview ? (
-        <div className="relative">
-          <img src={preview} alt="Your meal" className="w-full rounded-xl object-cover max-h-80" />
+        <div className="relative overflow-hidden rounded-xl bg-bark-900">
+          <img src={preview} alt="Your meal" className="block w-full max-h-[60vh] object-contain" />
           <button
             className="absolute top-2 right-2 chip bg-bark-900/70 text-white"
-            onClick={() => {
-              setPreview(null);
-              setPrepared(null);
-            }}
+            onClick={clearPhoto}
           >
             Retake
           </button>
+          {prepared?.width && prepared.height && (
+            <span className="absolute bottom-2 left-2 chip bg-bark-900/70 text-white text-[11px]">
+              Upload preview · {prepared.width}×{prepared.height}
+            </span>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
@@ -163,8 +187,8 @@ export default function PhotoCapture() {
         </button>
       )}
       <p className="text-xs text-bark-500 text-center">
-        Photos are shrunk to about {prepared ? `${Math.round(prepared.bytes / 1024)} KB` : '1 MB'}{' '}
-        and sent only to Claude. Roughly 1 to 2 cents each.
+        The clean preview above is the image sent to Claude, optimised to about{' '}
+        {prepared ? `${Math.round(prepared.bytes / 1024)} KB` : '1 MB'}. Roughly 1 to 2 cents each.
       </p>
     </div>
   );

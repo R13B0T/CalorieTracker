@@ -8,7 +8,7 @@ No accounts, no subscription, no server. Everything lives on your device.
 
 - **Log five ways**: photo (Claude vision), describe in text, voice, barcode (Open Food Facts), or search the Australian Food Composition Database.
 - **Honest estimates**: every item shows grams, kcal + kJ, macros and a confidence rating. Slide portions, edit lines, ask Claude a follow-up. Low-confidence guesses are flagged, not hidden.
-- **Gamified**: XP, levels and titles; daily and weekly quests; 25 badges; streaks with a freeze item; a quokka that evolves from joey to legend and buys outfits and habitats with coins. It never shames you about food.
+- **Gamified**: XP, levels and titles; daily and weekly quests; 25 badges; streaks with a freeze item; a quokka that evolves from joey to legend and buys 11 outfits and 9 habitats with coins. It never shames you about food.
 - **Body**: water, weight with a trend line, exercise (default _not_ eaten back), fasting timer.
 - **Gets more accurate**: after two weeks of weigh-ins it compares expected versus actual change and suggests a bounded target correction.
 - **Personas**: sassy, warm or drill sergeant. Change any time.

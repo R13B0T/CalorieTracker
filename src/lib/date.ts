@@ -5,7 +5,11 @@
 const pad = (n: number) => String(n).padStart(2, '0');
 
 export function toDayKey(ts: number, dayStartHour = 4): string {
-  const d = new Date(ts - dayStartHour * 3_600_000);
+  // Shift by a calendar day in local time instead of subtracting a fixed number
+  // of milliseconds. A fixed subtraction crosses the wrong local hour when a
+  // daylight-saving transition makes the day 23 or 25 hours long.
+  const d = new Date(ts);
+  if (d.getHours() < dayStartHour) d.setDate(d.getDate() - 1);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 

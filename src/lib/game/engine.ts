@@ -20,6 +20,7 @@ import { isVegOrFruit } from '../food/vegDetect';
 import type { BadgeDef } from '@/data/badges';
 import type { QuestInstance } from '../db/types';
 import type { QuestMetric } from '@/data/quests';
+import { OUTFIT_IDS } from '@/data/shop';
 
 export type GameEvent =
   | { type: 'meal_logged'; entry: FoodEntry; editedAiLines: number; sliderAdjusted: boolean }
@@ -256,7 +257,7 @@ export async function applyEvent(event: GameEvent): Promise<GameResult> {
             if (!state.inventory.includes(event.itemId)) state.inventory.push(event.itemId);
             if (event.kind === 'outfit') {
               state.counters.outfitsOwned = state.inventory.filter((id) =>
-                ['bow', 'sunnies', 'bucket_hat', 'scarf', 'crown'].includes(id),
+                OUTFIT_IDS.has(id),
               ).length;
               state.pet.outfitId = event.itemId;
             }
