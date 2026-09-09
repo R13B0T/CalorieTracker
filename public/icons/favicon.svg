@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#f4ead8"/>
+  <!-- ears -->
+  <ellipse cx="150" cy="170" rx="58" ry="66" fill="#8b6a4e"/>
+  <ellipse cx="362" cy="170" rx="58" ry="66" fill="#8b6a4e"/>
+  <ellipse cx="150" cy="176" rx="34" ry="42" fill="#d9a88a"/>
+  <ellipse cx="362" cy="176" rx="34" ry="42" fill="#d9a88a"/>
+  <!-- head -->
+  <ellipse cx="256" cy="290" rx="170" ry="150" fill="#a3815f"/>
+  <ellipse cx="256" cy="330" rx="120" ry="90" fill="#c9ab88"/>
+  <!-- eyes -->
+  <circle cx="196" cy="262" r="24" fill="#2f2118"/>
+  <circle cx="316" cy="262" r="24" fill="#2f2118"/>
+  <circle cx="204" cy="254" r="8" fill="#fff"/>
+  <circle cx="324" cy="254" r="8" fill="#fff"/>
+  <!-- nose + smile -->
+  <ellipse cx="256" cy="318" rx="26" ry="18" fill="#3b2a1f"/>
+  <path d="M196 350 Q256 410 316 350" stroke="#3b2a1f" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <!-- leaf -->
+  <path d="M400 92 q60 -20 76 40 q-60 22 -76 -40z" fill="#5f8a6b"/>
+  <path d="M404 96 l60 28" stroke="#3f6b4d" stroke-width="6" stroke-linecap="round"/>
+</svg>

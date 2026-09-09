@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-sand-50: #fbf7ef;
+  --color-sand-100: #f4ead8;
+  --color-sand-200: #e8d9bd;
+  --color-sand-300: #d9c39a;
+  --color-bark-900: #2f2118;
+  --color-bark-700: #4a3728;
+  --color-bark-500: #7a6250;
+  --color-bark-300: #b39a83;
+  --color-euc-700: #3f6b4d;
+  --color-euc-500: #5f8a6b;
+  --color-euc-300: #9dbba4;
+  --color-euc-100: #dfeae1;
+  --color-sun-500: #f2b544;
+  --color-sun-300: #f8d488;
+  --color-berry-500: #c85a54;
+  --color-berry-100: #f6dad8;
+  --color-sky-500: #5b9bd5;
+  --color-sky-100: #dcebf7;
+  --color-protein: #d97757;
+  --color-carbs: #e0aa3e;
+  --color-fat: #8a6fbf;
+  --color-fibre: #5f8a6b;
+  --font-sans: 'Nunito', 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius-xl: 1.25rem;
+  --shadow-soft: 0 6px 24px -8px rgb(47 33 24 / 0.18);
+}
+
+:root {
+  color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-sand-100);
+  color: var(--color-bark-900);
+  font-family: var(--font-sans);
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+@utility card {
+  @apply rounded-xl bg-sand-50 shadow-soft p-4;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-bold transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 select-none;
+}
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-bold transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 select-none bg-euc-500 text-white hover:bg-euc-700;
+}
+@utility btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-bold transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 select-none bg-sand-200 text-bark-900 hover:bg-sand-300;
+}
+@utility btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-bold transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 select-none bg-transparent text-bark-700 hover:bg-sand-200;
+}
+@utility input {
+  @apply w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-base text-bark-900 outline-none focus:border-euc-500 focus:ring-2 focus:ring-euc-300;
+}
+@utility label {
+  @apply block text-sm font-semibold text-bark-700 mb-1;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.animate-pop { animation: pop 0.35s ease-out both; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-bob { animation: bob 2.4s ease-in-out infinite; }
+
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+.animate-blink { animation: blink 4s infinite; transform-origin: center; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #e8d9bd 25%, #f4ead8 50%, #e8d9bd 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
