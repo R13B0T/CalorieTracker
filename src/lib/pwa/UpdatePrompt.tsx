@@ -41,7 +41,7 @@ export function UpdatePrompt() {
 
   if (!needRefresh) return null;
   return (
-    <div className="fixed bottom-24 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+    <div className="fixed bottom-36 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
       <div className="pointer-events-auto animate-pop flex items-center gap-3 rounded-full bg-bark-900 text-sand-50 pl-5 pr-2 py-2 shadow-soft">
         <span className="text-sm font-semibold">New version ready</span>
         <button
