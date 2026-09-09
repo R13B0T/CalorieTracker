@@ -11,6 +11,7 @@ const PhotoCapture = lazy(() => import('./photo/PhotoCapture'));
 const VoiceInput = lazy(() => import('./voice/VoiceInput'));
 const BarcodeScanner = lazy(() => import('./barcode/BarcodeScanner'));
 const FoodSearch = lazy(() => import('./search/FoodSearch'));
+const RecentFoods = lazy(() => import('./recent/RecentFoods'));
 
 const METHODS = [
   {
@@ -24,6 +25,13 @@ const METHODS = [
   { to: 'voice', emoji: '🎙️', title: 'Say it', hint: 'Talk, then check the text' },
   { to: 'barcode', emoji: '🏷️', title: 'Scan a barcode', hint: 'Most accurate for packaged food' },
   { to: 'search', emoji: '🔍', title: 'Search foods', hint: 'Australian database, no AI needed' },
+  {
+    to: 'recent',
+    emoji: '⭐',
+    title: 'My foods',
+    hint: 'Repeat a meal or pick saved items',
+    wide: true,
+  },
 ];
 
 function Picker() {
@@ -65,7 +73,7 @@ function Picker() {
           <Link
             key={m.to}
             to={m.to}
-            className={`card flex flex-col gap-1 active:scale-[0.98] transition ${m.primary ? 'col-span-2 bg-euc-500 text-white' : ''}`}
+            className={`card flex flex-col gap-1 active:scale-[0.98] transition ${m.primary ? 'col-span-2 bg-euc-500 text-white' : ''} ${'wide' in m && m.wide ? 'col-span-2' : ''}`}
           >
             <span className="text-3xl" aria-hidden>
               {m.emoji}
@@ -91,6 +99,7 @@ export default function LogHub() {
         <Route path="voice" element={<VoiceInput />} />
         <Route path="barcode" element={<BarcodeScanner />} />
         <Route path="search" element={<FoodSearch />} />
+        <Route path="recent" element={<RecentFoods />} />
         <Route path="review" element={<MealReview />} />
       </Routes>
     </Suspense>

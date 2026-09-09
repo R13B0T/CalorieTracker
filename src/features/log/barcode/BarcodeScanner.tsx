@@ -26,6 +26,7 @@ export default function BarcodeScanner() {
   const [error, setError] = useState<string | null>(null);
   const [cameraSupported] = useState(() => !!navigator.mediaDevices?.getUserMedia);
   const [custom, setCustom] = useState(false);
+  const [needsTap, setNeedsTap] = useState(false);
 
   useEffect(() => {
     if (cameraSupported) startCamera();
@@ -53,7 +54,13 @@ export default function BarcodeScanner() {
       streamRef.current = stream;
       const v = videoRef.current!;
       v.srcObject = stream;
-      await v.play();
+      try {
+        await v.play();
+        setNeedsTap(false);
+      } catch {
+        // iOS can refuse autoplay without a gesture; offer a tap to start.
+        setNeedsTap(true);
+      }
       setPhase('scanning');
       const ac = new AbortController();
       abortRef.current = ac;
@@ -149,7 +156,20 @@ export default function BarcodeScanner() {
       </div>
 
       <div className="relative rounded-2xl overflow-hidden bg-bark-900 aspect-[4/3]">
-        <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
+        <video ref={videoRef} className="w-full h-full object-cover" playsInline muted autoPlay />
+        {needsTap && (
+          <button
+            className="absolute inset-0 flex items-center justify-center bg-bark-900/60 text-sand-50 font-bold"
+            onClick={() =>
+              videoRef.current
+                ?.play()
+                .then(() => setNeedsTap(false))
+                .catch(() => undefined)
+            }
+          >
+            Tap to start camera
+          </button>
+        )}
         {phase === 'scanning' && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-3/4 h-24 border-2 border-sun-500 rounded-xl" />
@@ -170,6 +190,16 @@ export default function BarcodeScanner() {
       {error && (
         <div className="rounded-xl bg-berry-100 text-berry-500 px-4 py-3 text-sm font-semibold">
           {error}
+        </div>
+      )}
+      {phase === 'error' && code && (
+        <div className="grid grid-cols-2 gap-2">
+          <button className="btn-secondary" onClick={() => onCode(code)}>
+            Retry lookup
+          </button>
+          <button className="btn-secondary" onClick={() => setCustom(true)}>
+            Enter label instead
+          </button>
         </div>
       )}
 
