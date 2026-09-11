@@ -8,6 +8,7 @@ export type Goal = 'lose' | 'maintain' | 'gain';
 export type Mood = 'ecstatic' | 'happy' | 'content' | 'sleepy' | 'peckish' | 'worried';
 export type PetStage = 'joey' | 'adult' | 'legend';
 export type EnergyUnit = 'kcal' | 'kJ';
+export type FodmapDisplay = 'overall' | 'groups';
 
 /** Nutrients per the stored quantity. kJ is always derived, never stored. */
 export interface Nutrients {
@@ -35,6 +36,8 @@ export interface FoodItem {
   per: Nutrients;
   confidence: Confidence;
   assumptions?: string[];
+  /** Optional product ingredients used by local dietary checks. */
+  ingredients?: string;
   ref?: FoodRef;
   userEdited?: boolean;
 }
@@ -199,6 +202,10 @@ export interface Settings {
   fastingDefaultHours: number;
   waterGoalMl: number;
   hapticsOn: boolean;
+  /** Show the local, indicative FODMAP screening result on meal review. */
+  fodmapEnabled: boolean;
+  /** Compact overall result, or the overall result plus FODMAP group ratings. */
+  fodmapDisplay: FodmapDisplay;
   installBannerDismissedAt?: number;
   lastExportAt?: number;
   coachCallsToday?: { dayKey: string; count: number };
@@ -212,6 +219,8 @@ export interface OffCacheRow {
   fetchedAt: number;
   product: CachedProduct | null;
   source: 'off' | 'user';
+  /** Increment when the cached Open Food Facts field set changes. */
+  detailsVersion?: number;
 }
 
 export interface CachedProduct {
@@ -220,6 +229,7 @@ export interface CachedProduct {
   brand?: string;
   servingG?: number;
   per100: Nutrients & { sugars?: number; sodiumMg?: number };
+  ingredients?: string;
   imageUrl?: string;
   fibreUnknown?: boolean;
   kcalFromKj?: boolean;

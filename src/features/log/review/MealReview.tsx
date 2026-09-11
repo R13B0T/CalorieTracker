@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useSessionStore, toast } from '@/stores/useSessionStore';
+import { db } from '@/lib/db/db';
 import type { FoodItem, MealSlot } from '@/lib/db/types';
 import {
   analysisToItems,
@@ -19,6 +21,7 @@ import { ConfidenceBadge } from '@/components/ui/ConfidenceBadge';
 import { Segmented } from '@/components/ui/Segmented';
 import { PortionSlider } from '@/components/ui/Slider';
 import { useLevelUp } from '@/features/game/LevelUpModal';
+import { FodmapSummary } from './FodmapSummary';
 
 const SLOTS: { value: MealSlot; label: string; emoji: string }[] = [
   { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
@@ -32,10 +35,11 @@ export default function MealReview() {
   const draft = useSessionStore((s) => s.draft);
   const setDraft = useSessionStore((s) => s.setDraft);
   const showLevelUp = useLevelUp();
+  const settings = useLiveQuery(() => db.settings.get('me'), []);
 
   const [title, setTitle] = useState(draft?.analysis.title ?? '');
   const [items, setItems] = useState<FoodItem[]>(() =>
-    draft ? analysisToItems(draft.analysis) : [],
+    draft ? (draft.preparedItems ?? analysisToItems(draft.analysis)) : [],
   );
   const [slot, setSlot] = useState<MealSlot>(draft?.slot ?? suggestSlot(Date.now()));
   const [wholeScale, setWholeScale] = useState(1);
@@ -86,7 +90,7 @@ export default function MealReview() {
     setRefining(true);
     try {
       const next = await refineMeal(draft!.analysis, followUp, { imageBase64: draft!.imageBase64 });
-      setDraft({ ...draft!, analysis: next });
+      setDraft({ ...draft!, analysis: next, preparedItems: undefined });
       setItems(analysisToItems(next));
       setTitle(next.title);
       setWholeScale(1);
@@ -152,18 +156,23 @@ export default function MealReview() {
         aria-label="Meal name"
       />
 
-      <div className="card flex items-center justify-between gap-3">
-        <div>
-          <KcalKj kcal={totals.kcal} size="lg" />
-          <div className="text-xs text-bark-500 mt-1">
-            P {Math.round(totals.protein)}g · C {Math.round(totals.carbs)}g · F{' '}
-            {Math.round(totals.fat)}g · Fibre {Math.round(totals.fibre)}g
+      <div className="card flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <KcalKj kcal={totals.kcal} size="lg" />
+            <div className="text-xs text-bark-500 mt-1">
+              P {Math.round(totals.protein)}g · C {Math.round(totals.carbs)}g · F{' '}
+              {Math.round(totals.fat)}g · Fibre {Math.round(totals.fibre)}g
+            </div>
+          </div>
+          <div className="text-right">
+            <ConfidenceBadge level={conf} />
+            <div className="text-xs text-bark-500 mt-1">Estimate ±{CONFIDENCE_PCT[conf]}%</div>
           </div>
         </div>
-        <div className="text-right">
-          <ConfidenceBadge level={conf} />
-          <div className="text-xs text-bark-500 mt-1">Estimate ±{CONFIDENCE_PCT[conf]}%</div>
-        </div>
+        {settings?.fodmapEnabled && (
+          <FodmapSummary items={items} display={settings.fodmapDisplay ?? 'overall'} />
+        )}
       </div>
 
       {draft.analysis.needs_clarification && (

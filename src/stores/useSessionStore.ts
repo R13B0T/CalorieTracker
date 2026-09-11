@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { MealAnalysis } from '@/lib/ai/schemas';
-import type { MealSlot, Source } from '@/lib/db/types';
+import type { FoodItem, MealSlot, Source } from '@/lib/db/types';
 
 export type ToastTone = 'info' | 'reward' | 'error';
 export interface Toast {
@@ -33,6 +33,8 @@ export const toast = (message: string, tone?: ToastTone, icon?: string) =>
 /** A meal that has been analysed but not yet saved. Lives only for the session. */
 export interface DraftMeal {
   analysis: MealAnalysis;
+  /** Exact database/manual items when no AI conversion is needed. */
+  preparedItems?: FoodItem[];
   source: Source;
   slot: MealSlot;
   rawInput?: string;

@@ -22,7 +22,7 @@ import {
 import { toast } from '@/stores/useSessionStore';
 import { macroGrams } from '@/lib/nutrition/tdee';
 import { isStandalone, promptInstall } from '@/lib/pwa/InstallHint';
-import type { EnergyUnit, Persona } from '@/lib/db/types';
+import type { EnergyUnit, FodmapDisplay, Persona } from '@/lib/db/types';
 import { COINS } from '@/lib/game/rules';
 import { energyFromKcal, energyToKcal, formatEnergy } from '@/lib/nutrition/units';
 
@@ -307,6 +307,32 @@ function PrefsCard() {
         value={s.eatBackExercise}
         onChange={(v) => updateSettings({ eatBackExercise: v })}
       />
+      <div className="border-t border-sand-200 pt-3 flex flex-col gap-3">
+        <Toggle
+          label="FODMAP checker"
+          hint="Add an indicative, portion-aware FODMAP screen to every food check."
+          value={s.fodmapEnabled ?? false}
+          onChange={(fodmapEnabled) => updateSettings({ fodmapEnabled })}
+        />
+        {s.fodmapEnabled && (
+          <div>
+            <span className="label">FODMAP detail</span>
+            <Segmented<FodmapDisplay>
+              columns={2}
+              value={s.fodmapDisplay ?? 'overall'}
+              onChange={(fodmapDisplay) => updateSettings({ fodmapDisplay })}
+              options={[
+                { value: 'overall', label: 'Overall only', hint: 'One simple rating' },
+                { value: 'groups', label: 'By group', hint: 'Show all five groups' },
+              ]}
+            />
+          </div>
+        )}
+        <p className="text-xs text-bark-500">
+          This is a screening guide from food names and available ingredients—not a diagnosis or
+          laboratory-tested rating.
+        </p>
+      </div>
       <div className="grid grid-cols-3 gap-2">
         <NumberField
           label="Day starts at"

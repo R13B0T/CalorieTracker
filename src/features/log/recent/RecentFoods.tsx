@@ -112,6 +112,7 @@ export default function RecentFoods() {
             confidence: it.confidence,
             ref: it.ref ?? { kind: 'manual' },
             assumptions: it.assumptions,
+            ingredients: it.ingredients,
           }),
         });
       }
@@ -144,6 +145,19 @@ export default function RecentFoods() {
         overall_confidence: overallConfidence(e.items),
         needs_clarification: null,
       },
+      preparedItems: e.items.map((i) => ({
+        ...i,
+        id: newId(),
+        grams: Math.round(i.grams * i.scale),
+        scale: 1,
+        per: {
+          kcal: i.per.kcal * i.scale,
+          protein: i.per.protein * i.scale,
+          carbs: i.per.carbs * i.scale,
+          fat: i.per.fat * i.scale,
+          fibre: i.per.fibre * i.scale,
+        },
+      })),
       source: 'quick_repeat',
       slot: suggestSlot(Date.now()),
       thumb: e.photoThumb,
@@ -167,6 +181,7 @@ export default function RecentFoods() {
         overall_confidence: overallConfidence(basket),
         needs_clarification: null,
       },
+      preparedItems: basket,
       source: 'manual',
       slot: suggestSlot(Date.now()),
     });

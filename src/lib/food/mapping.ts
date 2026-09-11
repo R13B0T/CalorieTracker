@@ -11,6 +11,8 @@ export interface OffProduct {
   quantity?: string;
   serving_size?: string;
   serving_quantity?: number | string;
+  ingredients_text?: string;
+  ingredients_text_en?: string;
   image_front_small_url?: string;
   nutriments?: Record<string, number | string | undefined>;
 }
@@ -45,6 +47,7 @@ export function offToProduct(p: OffProduct): CachedProduct | null {
     name: p.product_name_en || p.product_name || 'Unnamed product',
     brand: p.brands?.split(',')[0]?.trim(),
     servingG: num(p.serving_quantity) ?? parseServingGrams(p.serving_size),
+    ingredients: p.ingredients_text_en || p.ingredients_text || undefined,
     per100: {
       kcal,
       protein: num(n['proteins_100g']) ?? 0,
@@ -80,6 +83,7 @@ export function productToItem(p: CachedProduct, grams: number): FoodItem {
     per,
     confidence: p.fibreUnknown || p.kcalFromKj ? 'medium' : 'high',
     assumptions: assumptions.length ? assumptions : undefined,
+    ingredients: p.ingredients,
     ref: { kind: 'off', barcode: p.barcode },
   };
 }

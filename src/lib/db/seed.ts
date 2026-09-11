@@ -63,6 +63,8 @@ export const DEFAULT_SETTINGS: Settings = {
   fastingDefaultHours: 16,
   waterGoalMl: 2000,
   hapticsOn: true,
+  fodmapEnabled: false,
+  fodmapDisplay: 'overall',
   onboarded: false,
 };
 

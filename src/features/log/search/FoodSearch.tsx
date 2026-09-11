@@ -80,6 +80,7 @@ export default function FoodSearch() {
         overall_confidence: 'high',
         needs_clarification: null,
       },
+      preparedItems: basket,
       source: 'search',
       slot: suggestSlot(Date.now()),
     });

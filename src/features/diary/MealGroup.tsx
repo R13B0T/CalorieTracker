@@ -65,6 +65,18 @@ function EntryCard({ entry }: { entry: FoodEntry }) {
         overall_confidence: overallConfidence(entry.items),
         needs_clarification: null,
       },
+      preparedItems: entry.items.map((i) => ({
+        ...i,
+        grams: Math.round(i.grams * i.scale),
+        scale: 1,
+        per: {
+          kcal: i.per.kcal * i.scale,
+          protein: i.per.protein * i.scale,
+          carbs: i.per.carbs * i.scale,
+          fat: i.per.fat * i.scale,
+          fibre: i.per.fibre * i.scale,
+        },
+      })),
       source: entry.source,
       slot: entry.slot,
       thumb: entry.photoThumb,
