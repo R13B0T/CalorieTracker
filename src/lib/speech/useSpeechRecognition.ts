@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMediaPermission } from '@/lib/media/useMediaPermission';
 
 type SR = {
   lang: string;
@@ -33,6 +34,7 @@ export function useSpeechRecognition(lang = 'en-AU', maxSeconds = 15) {
   const [error, setError] = useState<string | null>(null);
   const recRef = useRef<SR | null>(null);
   const timerRef = useRef<number | null>(null);
+  const { state: permission, refresh: refreshPermission } = useMediaPermission('microphone');
 
   const stop = useCallback(() => {
     recRef.current?.stop();
@@ -42,6 +44,10 @@ export function useSpeechRecognition(lang = 'en-AU', maxSeconds = 15) {
   const start = useCallback(() => {
     const Ctor = getCtor();
     if (!Ctor) return;
+    if (permission === 'denied') {
+      setError('Microphone is blocked. Allow it for Quokkal in your browser settings.');
+      return;
+    }
     setError(null);
     setInterim('');
     const rec = new Ctor();
@@ -66,6 +72,7 @@ export function useSpeechRecognition(lang = 'en-AU', maxSeconds = 15) {
     };
     rec.onerror = (e) => {
       setListening(false);
+      void refreshPermission();
       setError(
         e.error === 'not-allowed'
           ? 'Microphone permission was denied.'
@@ -78,7 +85,7 @@ export function useSpeechRecognition(lang = 'en-AU', maxSeconds = 15) {
     rec.start();
     setListening(true);
     timerRef.current = window.setTimeout(() => rec.stop(), maxSeconds * 1000);
-  }, [lang, maxSeconds]);
+  }, [lang, maxSeconds, permission, refreshPermission]);
 
   useEffect(
     () => () => {
@@ -88,5 +95,15 @@ export function useSpeechRecognition(lang = 'en-AU', maxSeconds = 15) {
     [],
   );
 
-  return { supported, listening, transcript, interim, error, start, stop, setTranscript };
+  return {
+    supported,
+    listening,
+    transcript,
+    interim,
+    error,
+    permission,
+    start,
+    stop,
+    setTranscript,
+  };
 }

@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
 import type { FodmapDisplay, FoodItem } from '@/lib/db/types';
-import { assessFodmap, FODMAP_GROUPS, type FodmapRating } from '@/lib/nutrition/fodmap';
+import {
+  assessFodmap,
+  FODMAP_GROUPS,
+  MONASH_FODMAP_APP_URL,
+  type FodmapRating,
+} from '@/lib/nutrition/fodmap';
 
 const RATING: Record<FodmapRating, { label: string; dot: string; badge: string; text: string }> = {
   low: {
@@ -72,7 +77,17 @@ export function FodmapSummary({ items, display }: { items: FoodItem[]; display: 
       )}
 
       <p className="text-[10px] text-bark-500 mt-2">
-        Indicative only—recipes, brands, serving sizes and personal tolerance vary.
+        Indicative only—recipes, brands, serving sizes and personal tolerance vary. For tested foods
+        and exact serves,{' '}
+        <a
+          className="font-bold underline underline-offset-2"
+          href={MONASH_FODMAP_APP_URL}
+          target="_blank"
+          rel="noreferrer"
+        >
+          check the Monash FODMAP app
+        </a>
+        .
       </p>
     </div>
   );

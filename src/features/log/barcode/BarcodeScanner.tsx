@@ -9,6 +9,7 @@ import { useSessionStore, toast } from '@/stores/useSessionStore';
 import { suggestSlot } from '@/lib/db/repos/meals';
 import { NumberField } from '@/components/ui/NumberField';
 import { Sheet } from '@/components/ui/Sheet';
+import { useMediaPermission } from '@/lib/media/useMediaPermission';
 
 type Phase = 'idle' | 'starting' | 'scanning' | 'looking' | 'found' | 'notfound' | 'error';
 
@@ -30,14 +31,12 @@ export default function BarcodeScanner() {
   const [cameraSupported] = useState(() => !!navigator.mediaDevices?.getUserMedia);
   const [custom, setCustom] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
+  const cameraPermission = useMediaPermission('camera');
 
   useEffect(() => {
     mountedRef.current = true;
-    // Deferring avoids React StrictMode issuing two simultaneous camera requests in development.
-    const timer = cameraSupported ? window.setTimeout(() => void startCamera(), 0) : undefined;
     return () => {
       mountedRef.current = false;
-      if (timer !== undefined) window.clearTimeout(timer);
       stopCamera();
       lookupAbortRef.current?.abort();
     };
@@ -80,6 +79,7 @@ export default function BarcodeScanner() {
         return;
       }
       streamRef.current = stream;
+      void cameraPermission.refresh();
       const v = videoRef.current;
       if (!v) throw new Error('Camera preview is unavailable');
       v.srcObject = stream;
@@ -111,6 +111,7 @@ export default function BarcodeScanner() {
     } catch (e) {
       if (!mountedRef.current || attempt !== cameraAttemptRef.current) return;
       console.warn('camera unavailable', e);
+      void cameraPermission.refresh();
       stopCamera();
       setPhase('idle');
       setError(cameraErrorMessage(e));
@@ -245,6 +246,23 @@ export default function BarcodeScanner() {
             No camera access in this browser. Use the photo or number options below.
           </div>
         )}
+        {phase === 'idle' && cameraSupported && (
+          <button
+            type="button"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-sand-50"
+            onClick={() => void startCamera()}
+          >
+            <span className="text-4xl" aria-hidden>
+              📷
+            </span>
+            <span className="font-black">Start barcode scanner</span>
+            <span className="text-xs text-center text-sand-200">
+              {cameraPermission.state === 'denied'
+                ? 'Camera is blocked. Allow it in your browser settings, then try again.'
+                : 'The camera stays off until you tap.'}
+            </span>
+          </button>
+        )}
       </div>
 
       {error && (
@@ -279,7 +297,7 @@ export default function BarcodeScanner() {
           📷 Photo of barcode
         </button>
         {phase !== 'scanning' && phase !== 'starting' && cameraSupported && (
-          <button className="btn-secondary" onClick={startCamera}>
+          <button className="btn-secondary" onClick={() => void startCamera()}>
             Restart camera
           </button>
         )}

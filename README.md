@@ -52,6 +52,7 @@ Updates: the service worker checks for a new build on launch and hourly. A banne
 
 - Food Standards Australia New Zealand, _Australian Food Composition Database, Release 3_ (CC BY 4.0). Converted at build time by `scripts/build-afcd.mjs`.
 - Open Food Facts (ODbL) for barcodes and packaged foods.
+- The local FODMAP screen follows food families and examples in Monash University's public guidance. It links to the official Monash FODMAP app for its proprietary laboratory-tested database and exact serving sizes; that database is not bundled or scraped.
 
 ### Project layout
 

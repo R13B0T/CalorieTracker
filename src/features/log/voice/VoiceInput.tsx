@@ -47,7 +47,11 @@ export default function VoiceInput() {
           <p className="text-center text-sm text-bark-500">
             {sr.listening
               ? 'Listening… tap to stop (auto-stops at 15 s)'
-              : 'Tap and talk. Brands and sizes help.'}
+              : sr.permission === 'denied'
+                ? 'Microphone is blocked in your browser settings.'
+                : sr.permission === 'prompt'
+                  ? 'Tap to allow the microphone, then talk. Quokkal never starts it on launch.'
+                  : 'Tap and talk. Brands and sizes help.'}
           </p>
           <textarea
             className="input min-h-28"
